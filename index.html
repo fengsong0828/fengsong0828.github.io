@@ -1,0 +1,622 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LowAltitude Insight | 低空经济洞察</title>
+    <style>
+        /* =========================================
+           1. 基础设置与变量
+           ========================================= */
+        :root {
+            --primary-dark: #0f172a;      /* 深空蓝 */
+            --primary-blue: #3b82f6;      /* 科技蓝 */
+            --primary-hover: #2563eb;
+            --text-main: #1e293b;         /* 正文黑 */
+            --text-light: #64748b;        /* 辅助灰 */
+            --bg-gray: #f8fafc;           /* 背景灰 */
+            --white: #ffffff;
+            --border-color: #e2e8f0;
+            --card-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.01);
+            --font-sans: 'Inter', 'PingFang SC', 'Helvetica Neue', Arial, sans-serif;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: var(--font-sans);
+            background-color: var(--bg-gray);
+            color: var(--text-main);
+            line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        a { text-decoration: none; color: inherit; transition: 0.3s; }
+        ul { list-style: none; }
+        button { font-family: inherit; }
+
+        /* =========================================
+           2. 布局容器系统 (核心对齐逻辑)
+           ========================================= */
+        /* 
+           所有页面主要内容的容器。
+           设置最大宽度1200px，居中，左右留白。
+           确保所有模块（头部、数据、新闻、公司库）左右严格对齐。
+        */
+        .standard-container {
+            max-width: 1200px;
+            width: 100%;
+            margin: 0 auto;
+            padding: 0 24px;
+        }
+
+        /* =========================================
+           3. 导航栏 Header
+           ========================================= */
+        header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            border-bottom: 1px solid var(--border-color);
+            height: 72px;
+            display: flex;
+            align-items: center;
+        }
+
+        .nav-inner {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 1.4rem;
+            font-weight: 800;
+            color: var(--primary-dark);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .logo span { color: var(--primary-blue); }
+
+        .nav-links { display: flex; gap: 32px; }
+        .nav-links a { font-size: 0.95rem; font-weight: 500; color: #334155; }
+        .nav-links a:hover { color: var(--primary-blue); }
+
+        .header-btns { display: flex; gap: 12px; }
+        .btn { padding: 8px 20px; border-radius: 6px; font-size: 0.9rem; font-weight: 600; cursor: pointer; border: none; transition: 0.2s; }
+        .btn-primary { background: var(--primary-blue); color: white; }
+        .btn-primary:hover { background: var(--primary-hover); }
+        .btn-outline { border: 1px solid #cbd5e1; background: transparent; color: #475569; }
+        .btn-outline:hover { border-color: var(--primary-blue); color: var(--primary-blue); }
+
+        /* =========================================
+           4. Hero 区域
+           ========================================= */
+        .hero {
+            background: linear-gradient(135deg, var(--primary-dark) 0%, #1e293b 100%);
+            color: white;
+            padding: 60px 0 100px; /* 底部留白给浮动的仪表盘 */
+            text-align: center;
+            margin-bottom: -60px; /* 关键：让下方的仪表盘上浮覆盖 */
+        }
+        .hero h1 { font-size: 2.8rem; margin-bottom: 16px; letter-spacing: -0.5px; line-height: 1.2; }
+        .hero p { color: #94a3b8; font-size: 1.15rem; max-width: 600px; margin: 0 auto 32px; }
+
+        /* =========================================
+           5. 数据仪表盘 (悬浮卡片)
+           ========================================= */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr); /* 4列等宽 */
+            gap: 24px;
+            position: relative;
+            z-index: 10;
+            margin-bottom: 50px;
+        }
+
+        .data-card {
+            background: white;
+            padding: 24px;
+            border-radius: 12px;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            border-top: 4px solid var(--primary-blue);
+            text-align: center;
+            transition: transform 0.3s ease;
+        }
+        .data-card:hover { transform: translateY(-5px); }
+
+        .data-value { font-size: 2rem; font-weight: 800; color: var(--primary-dark); margin: 8px 0; }
+        .data-label { font-size: 0.85rem; color: var(--text-light); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+        .trend-indicator { font-size: 0.8rem; color: #10b981; font-weight: 500; display: block; margin-top: 4px; }
+
+        /* =========================================
+           6. 主内容区 Layout (Grid: 左8 右4)
+           ========================================= */
+        .main-layout-grid {
+            display: grid;
+            grid-template-columns: 8fr 4fr; /* 黄金比例分割 */
+            gap: 40px;
+            margin-bottom: 60px;
+        }
+
+        /* 通用板块标题样式 */
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .section-title { font-size: 1.25rem; font-weight: 700; color: var(--primary-dark); display: flex; align-items: center; gap: 10px; }
+        .section-title::before { content: ''; display: block; width: 4px; height: 20px; background: var(--primary-blue); border-radius: 2px; }
+        .section-link { font-size: 0.85rem; color: var(--primary-blue); font-weight: 600; }
+
+        /* 左侧：新闻列表 */
+        .news-tabs { display: flex; gap: 10px; margin-bottom: 20px; }
+        .tab { padding: 6px 16px; background: #e2e8f0; border-radius: 20px; font-size: 0.85rem; cursor: pointer; color: #475569; transition: 0.2s; }
+        .tab.active { background: var(--primary-dark); color: white; }
+
+        .news-item { display: flex; gap: 20px; padding: 24px 0; border-bottom: 1px solid #f1f5f9; }
+        .news-item:last-child { border: none; }
+        .news-image { width: 160px; height: 100px; border-radius: 8px; background: #cbd5e1; object-fit: cover; flex-shrink: 0; }
+        .news-content h3 { font-size: 1.1rem; margin-bottom: 8px; line-height: 1.4; color: var(--text-main); }
+        .news-content h3:hover { color: var(--primary-blue); cursor: pointer; }
+        .news-meta { font-size: 0.75rem; color: #94a3b8; display: flex; align-items: center; gap: 10px; }
+        .tag { color: var(--primary-blue); background: #eff6ff; padding: 2px 8px; border-radius: 4px; font-weight: 600; }
+
+        /* 右侧：侧边栏 Widget */
+        .sidebar-widget {
+            background: white;
+            padding: 24px;
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            margin-bottom: 24px;
+        }
+        .widget-title { font-size: 1rem; font-weight: 700; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
+        
+        .newsletter-box { background: linear-gradient(135deg, #eff6ff 0%, #ffffff 100%); text-align: center; }
+        .newsletter-input { width: 100%; padding: 10px; margin: 12px 0; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 0.9rem; }
+
+        .policy-list li { padding: 10px 0; border-bottom: 1px dashed var(--border-color); }
+        .policy-list li:last-child { border-bottom: none; }
+        .policy-list a { font-size: 0.9rem; display: block; margin-bottom: 4px; color: #334155; }
+        .policy-list a:hover { color: var(--primary-blue); }
+        .policy-region { font-size: 0.7rem; background: #f1f5f9; padding: 2px 6px; border-radius: 3px; color: #64748b; }
+
+        /* =========================================
+           7. 公司数据库 (Grid 4列)
+           ========================================= */
+        .company-section { margin-bottom: 80px; }
+
+        .company-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr); /* 强制4列 */
+            gap: 24px; /* 间距与上方保持一致 */
+        }
+
+        .company-card {
+            background: white;
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 24px;
+            transition: all 0.3s ease;
+            
+            /* 关键：Flex布局让内容垂直对齐 */
+            display: flex;
+            flex-direction: column;
+            height: 100%; 
+        }
+
+        .company-card:hover {
+            transform: translateY(-3px);
+            box-shadow: var(--card-shadow);
+            border-color: var(--primary-blue);
+        }
+
+        .company-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .company-logo-box {
+            width: 48px;
+            height: 48px;
+            background: var(--primary-dark);
+            border-radius: 8px;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 1.1rem;
+            flex-shrink: 0;
+        }
+
+        .company-info .name { font-weight: 700; font-size: 1.05rem; color: var(--text-main); }
+        .company-info .loc { font-size: 0.75rem; color: #94a3b8; margin-top: 2px; }
+
+        .company-desc {
+            font-size: 0.85rem;
+            color: #475569;
+            line-height: 1.5;
+            margin-bottom: 20px;
+            flex-grow: 1; /* 关键：填充剩余空间，把标签推到底部 */
+        }
+
+        .company-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-top: auto; /* 确保位于底部 */
+        }
+
+        .company-tag {
+            font-size: 0.7rem;
+            padding: 4px 10px;
+            background: #f1f5f9;
+            border-radius: 20px;
+            color: #64748b;
+            font-weight: 500;
+        }
+        .company-tag.highlight { color: var(--primary-blue); background: #eff6ff; }
+
+        /* =========================================
+           8. 页脚 Footer
+           ========================================= */
+        footer {
+            background: var(--primary-dark);
+            color: #94a3b8;
+            padding: 60px 0 20px;
+        }
+
+        .footer-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr 1fr;
+            gap: 40px;
+            margin-bottom: 40px;
+        }
+
+        .footer-col h4 { color: white; margin-bottom: 20px; font-size: 1rem; }
+        .footer-col ul li { margin-bottom: 12px; font-size: 0.9rem; }
+        .footer-col a:hover { color: white; }
+        
+        .copyright { border-top: 1px solid #334155; padding-top: 20px; text-align: center; font-size: 0.85rem; }
+
+        /* =========================================
+           9. 响应式适配 (移动端)
+           ========================================= */
+        @media (max-width: 1024px) {
+            .main-layout-grid { grid-template-columns: 1fr; } /* 平板：左右布局变单列 */
+            .company-grid { grid-template-columns: repeat(2, 1fr); } /* 平板：公司卡片变2列 */
+        }
+
+        @media (max-width: 768px) {
+            .nav-links { display: none; } /* 隐藏菜单 */
+            .hero h1 { font-size: 2rem; }
+            .dashboard-grid { grid-template-columns: repeat(2, 1fr); } /* 手机：数据卡片2列 */
+            .footer-grid { grid-template-columns: 1fr; gap: 30px; }
+        }
+
+        @media (max-width: 640px) {
+            .dashboard-grid { grid-template-columns: 1fr; } /* 小手机：数据卡片1列 */
+            .company-grid { grid-template-columns: 1fr; } /* 小手机：公司卡片1列 */
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 1. 导航栏 -->
+    <header>
+        <div class="standard-container">
+            <div class="nav-inner">
+                <a href="#" class="logo">
+                    <!-- SVG Logo 图标 -->
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+                    LowAltitude<span>Insight</span>
+                </a>
+                <nav class="nav-links">
+                    <a href="#">首页</a>
+                    <a href="#">资讯快报</a>
+                    <a href="#">政策法规</a>
+                    <a href="#">技术前沿</a>
+                    <a href="#">公司数据库</a>
+                </nav>
+                <div class="header-btns">
+                    <button class="btn btn-outline">搜索</button>
+                    <button class="btn btn-primary">订阅/登录</button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- 2. Hero 区域 -->
+    <section class="hero">
+        <div class="standard-container">
+            <h1>构建低空经济的数字基础设施</h1>
+            <p>实时洞察全球 eVTOL、无人机物流及城市空中交通（UAM）的政策、技术与资本动态。</p>
+            <button class="btn btn-primary" style="padding: 12px 32px; font-size: 1rem;">浏览深度报告</button>
+        </div>
+    </section>
+
+    <!-- 3. 核心数据仪表盘 (浮动层) -->
+    <div class="standard-container">
+        <div class="dashboard-grid">
+            <div class="data-card">
+                <div class="data-label">全球融资总额</div>
+                <div class="data-value" id="val-funding">$4.2B</div>
+                <span class="trend-indicator">▲ 12% 同比增长</span>
+            </div>
+            <div class="data-card">
+                <div class="data-label">试点城市</div>
+                <div class="data-value" id="val-cities">26</div>
+                <span class="trend-indicator">▲ 新增 3 个</span>
+            </div>
+            <div class="data-card">
+                <div class="data-label">本周新增专利</div>
+                <div class="data-value" id="val-patents">142</div>
+                <span class="trend-indicator">主要领域: 电池/飞控</span>
+            </div>
+            <div class="data-card">
+                <div class="data-label">已收录企业</div>
+                <div class="data-value">850+</div>
+                <span class="trend-indicator">查看全景图谱 →</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- 4. 主内容区域 (Grid 布局) -->
+    <div class="standard-container">
+        <div class="main-layout-grid">
+            
+            <!-- 左侧：动态流 -->
+            <main class="content-left">
+                <div class="section-header">
+                    <div class="section-title">最新动态</div>
+                    <a href="#" class="section-link">查看更多 ></a>
+                </div>
+
+                <div class="news-tabs">
+                    <span class="tab active">全部</span>
+                    <span class="tab">政策解读</span>
+                    <span class="tab">eVTOL</span>
+                    <span class="tab">资本动态</span>
+                </div>
+
+                <div class="news-feed">
+                    <!-- 新闻 1 -->
+                    <article class="news-item">
+                        <div class="news-image" style="background: #cbd5e1 url('https://via.placeholder.com/320x200?text=Policy') center/cover;"></div>
+                        <div class="news-content">
+                            <h3>民航局发布《民用无人驾驶航空器运行安全管理规则》解读</h3>
+                            <div class="news-meta">
+                                <span class="tag">政策法规</span>
+                                <span>2小时前</span>
+                            </div>
+                            <p style="color: #64748b; font-size: 0.9rem; margin-top: 8px;">
+                                新规明确了轻型、小型无人机的飞行空域限制，为城市物流配送扫清了部分法律障碍...
+                            </p>
+                        </div>
+                    </article>
+
+                    <!-- 新闻 2 -->
+                    <article class="news-item">
+                        <div class="news-image" style="background: #cbd5e1 url('https://via.placeholder.com/320x200?text=Investment') center/cover;"></div>
+                        <div class="news-content">
+                            <h3>某头部eVTOL企业完成B轮融资，红杉资本领投</h3>
+                            <div class="news-meta">
+                                <span class="tag">资本动态</span>
+                                <span>5小时前</span>
+                            </div>
+                            <p style="color: #64748b; font-size: 0.9rem; margin-top: 8px;">
+                                本轮融资将主要用于适航取证及大湾区示范航线的建设，标志着商业化落地加速...
+                            </p>
+                        </div>
+                    </article>
+
+                    <!-- 新闻 3 -->
+                    <article class="news-item">
+                        <div class="news-image" style="background: #cbd5e1 url('https://via.placeholder.com/320x200?text=Tech') center/cover;"></div>
+                        <div class="news-content">
+                            <h3>固态电池技术新突破：能量密度提升至 500Wh/kg</h3>
+                            <div class="news-meta">
+                                <span class="tag">技术前沿</span>
+                                <span>昨天</span>
+                            </div>
+                            <p style="color: #64748b; font-size: 0.9rem; margin-top: 8px;">
+                                这将使电动飞机的续航里程增加约40%，彻底改变短途城际空中交通的经济模型...
+                            </p>
+                        </div>
+                    </article>
+                </div>
+            </main>
+
+            <!-- 右侧：侧边栏 -->
+            <aside class="sidebar">
+                <!-- 订阅模块 -->
+                <div class="sidebar-widget newsletter-box">
+                    <div class="widget-title" style="justify-content:center; color:var(--primary-blue);">订阅行业日报</div>
+                    <p style="font-size: 0.85rem; color: #64748b; margin-bottom: 10px;">每早8点，获取低空经济核心情报。</p>
+                    <input type="email" class="newsletter-input" placeholder="输入您的邮箱地址">
+                    <button class="btn btn-primary" style="width: 100%;">免费订阅</button>
+                </div>
+
+                <!-- 政策模块 -->
+                <div class="sidebar-widget">
+                    <div class="widget-title">政策法规更新</div>
+                    <ul class="policy-list">
+                        <li>
+                            <a href="#">深圳经济特区低空经济产业促进条例</a>
+                            <span class="policy-region">中国·深圳</span>
+                        </li>
+                        <li>
+                            <a href="#">EASA 发布垂直起降航空器专用条件</a>
+                            <span class="policy-region">欧盟</span>
+                        </li>
+                        <li>
+                            <a href="#">FAA 针对空中出租车的拟议规则</a>
+                            <span class="policy-region">美国</span>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- 专家观点 -->
+                <div class="sidebar-widget">
+                    <div class="widget-title">专家观点</div>
+                    <div style="display: flex; gap: 12px; align-items: center; margin-bottom: 12px;">
+                        <div style="width: 40px; height: 40px; background: #ccc; border-radius: 50%;"></div>
+                        <div>
+                            <div style="font-weight: 700; font-size: 0.9rem;">FengSong 博士</div>
+                            <div style="font-size: 0.75rem; color: #64748b;">低空经济专家</div>
+                        </div>
+                    </div>
+                    <p style="font-size: 0.85rem; font-style: italic; color: #475569;">"2025年将是eVTOL适航取证的关键年份，但基础设施建设仍是短板..."</p>
+                </div>
+            </aside>
+        </div>
+    </div>
+
+    <!-- 5. 公司数据库 (与上方内容严格对齐) -->
+    <div class="standard-container">
+        <div class="company-section">
+            <div class="section-header">
+                <div class="section-title">行业图谱 & 公司库</div>
+                <a href="#" class="section-link">浏览全部 850+ 家企业 ></a>
+            </div>
+            
+            <div class="company-grid">
+                <!-- 公司卡片 1 -->
+                <div class="company-card">
+                    <div class="company-header">
+                        <div class="company-logo-box">EH</div>
+                        <div class="company-info">
+                            <div class="name">亿航智能</div>
+                            <div class="loc">中国 · 广州</div>
+                        </div>
+                    </div>
+                    <p class="company-desc">全球领先的自动驾驶飞行器科技企业，EH216-S 已获得全球首张无人驾驶 eVTOL 型号合格证。</p>
+                    <div class="company-tags">
+                        <span class="company-tag highlight">已上市</span>
+                        <span class="company-tag">自动驾驶</span>
+                        <span class="company-tag">TC取证</span>
+                    </div>
+                </div>
+
+                <!-- 公司卡片 2 -->
+                <div class="company-card">
+                    <div class="company-header">
+                        <div class="company-logo-box">JO</div>
+                        <div class="company-info">
+                            <div class="name">Joby Aviation</div>
+                            <div class="loc">美国 · 加州</div>
+                        </div>
+                    </div>
+                    <p class="company-desc">开发全电动垂直起降飞机，与达美航空深度合作，旨在打造快速、安静的空中出租车服务网络。</p>
+                    <div class="company-tags">
+                        <span class="company-tag highlight">已上市</span>
+                        <span class="company-tag">倾转旋翼</span>
+                        <span class="company-tag">美军合作</span>
+                    </div>
+                </div>
+
+                <!-- 公司卡片 3 -->
+                <div class="company-card">
+                    <div class="company-header">
+                        <div class="company-logo-box">XP</div>
+                        <div class="company-info">
+                            <div class="name">小鹏汇天</div>
+                            <div class="loc">中国 · 广州</div>
+                        </div>
+                    </div>
+                    <p class="company-desc">亚洲规模最大的飞行汽车公司，最新发布的“陆地航母”分体式飞行汽车开启了量产先河。</p>
+                    <div class="company-tags">
+                        <span class="company-tag">独角兽</span>
+                        <span class="company-tag">陆空两栖</span>
+                        <span class="company-tag">分体式</span>
+                    </div>
+                </div>
+
+                 <!-- 公司卡片 4 -->
+                 <div class="company-card">
+                    <div class="company-header">
+                        <div class="company-logo-box">DJ</div>
+                        <div class="company-info">
+                            <div class="name">大疆创新</div>
+                            <div class="loc">中国 · 深圳</div>
+                        </div>
+                    </div>
+                    <p class="company-desc">全球民用无人机霸主，发布 DJI FlyCart 30 进军低空运载领域，重新定义短途物资运输。</p>
+                    <div class="company-tags">
+                        <span class="company-tag">独角兽</span>
+                        <span class="company-tag">物流运输</span>
+                        <span class="company-tag">消费级</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 6. 页脚 -->
+    <footer>
+        <div class="standard-container">
+            <div class="footer-grid">
+                <div class="footer-col">
+                    <h4 style="font-size: 1.5rem; margin-bottom: 15px;">LowAltitude Insight</h4>
+                    <p style="font-size: 0.9rem; line-height: 1.6;">致力于成为低空经济领域最专业的信息服务平台与连接器，连接政策、资本与技术。</p>
+                </div>
+                <div class="footer-col">
+                    <h4>核心板块</h4>
+                    <ul>
+                        <li><a href="#">资讯快报</a></li>
+                        <li><a href="#">政策数据库</a></li>
+                        <li><a href="#">技术前沿</a></li>
+                        <li><a href="#">深度研报</a></li>
+                    </ul>
+                </div>
+                <div class="footer-col">
+                    <h4>关于我们</h4>
+                    <ul>
+                        <li><a href="#">愿景与使命</a></li>
+                        <li><a href="#">创始人简介</a></li>
+                        <li><a href="#">加入我们</a></li>
+                        <li><a href="#">联系方式</a></li>
+                    </ul>
+                </div>
+                <div class="footer-col">
+                    <h4>资源</h4>
+                    <ul>
+                        <li><a href="#">活动日历</a></li>
+                        <li><a href="#">问答社区</a></li>
+                        <li><a href="#">寻求报道</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="copyright">
+                &copy; 2025 LowAltitude Insight. All rights reserved.
+            </div>
+        </div>
+    </footer>
+
+    <!-- 7. 简单的交互脚本 -->
+    <script>
+        // 简单的淡入动画效果
+        document.addEventListener('DOMContentLoaded', () => {
+            const cards = document.querySelectorAll('.data-card');
+            cards.forEach((card, index) => {
+                card.style.opacity = '0';
+                card.style.transform = 'translateY(20px)';
+                setTimeout(() => {
+                    card.style.transition = 'all 0.6s ease';
+                    card.style.opacity = '1';
+                    card.style.transform = 'translateY(0)';
+                }, 100 * index);
+            });
+        });
+    </script>
+</body>
+</html>
