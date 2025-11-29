@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>公司数据库 | LowAltitude Insight</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <!-- 复用 Header -->
+    <header>
+        <div class="standard-container">
+            <div class="nav-inner">
+                <!-- 1. Logo (点击回首页) -->
+                <a href="index.html" class="logo">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
+                    </svg>
+                    LowAltitude<span>Insight</span>
+                </a>
+
+                <!-- 2. 手机端菜单按钮 (汉堡图标) -->
+                <button class="mobile-menu-btn" onclick="toggleMenu()">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="3" y1="12" x2="21" y2="12"></line>
+                        <line x1="3" y1="6" x2="21" y2="6"></line>
+                        <line x1="3" y1="18" x2="21" y2="18"></line>
+                    </svg>
+                </button>
+
+                <!-- 3. 中间导航链接 -->
+                <nav class="nav-links" id="navMenu">
+                    <a href="index.html">首页</a>
+                    <a href="news.html">资讯快报</a>
+                    <a href="policies.html">政策法规</a>
+                    <a href="tech.html">技术前沿</a>
+                    <a href="companies.html">公司数据库</a>
+                </nav>
+
+                <!-- 4. 右侧功能按钮 -->
+                <div class="header-actions">
+                    <button class="btn btn-outline">搜索</button>
+                    <button class="btn btn-primary">订阅/登录</button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- 页面专用较矮的 Hero -->
+    <section class="page-hero">
+        <div class="standard-container">
+            <h1>行业图谱 & 公司库</h1>
+            <p>收录全球 850+ 家低空经济产业链上下游企业</p>
+        </div>
+    </section>
+
+    <!-- 搜索与过滤 -->
+    <div class="standard-container" style="margin-bottom: 30px;">
+        <div style="display: flex; gap: 10px; overflow-x: auto; padding-bottom: 10px;">
+            <button class="btn btn-primary">全部</button>
+            <button class="btn btn-outline">整机制造</button>
+            <button class="btn btn-outline">飞控系统</button>
+            <button class="btn btn-outline">动力电池</button>
+            <button class="btn btn-outline">运营服务</button>
+        </div>
+    </div>
+
+    <!-- 公司列表 (展示更多) -->
+    <div class="standard-container">
+        <div class="company-grid" style="margin-bottom: 60px;">
+            <!-- 卡片 1 -->
+            <div class="company-card">
+                <div class="company-header">
+                    <div class="company-logo-box">EH</div>
+                    <div><div style="font-weight:700;">亿航智能</div><div style="font-size:0.75rem; color:#94a3b8;">中国 · 广州</div></div>
+                </div>
+                <p class="company-desc">全球领先的自动驾驶飞行器企业，EH216-S 已获型号合格证。</p>
+                <div class="company-tags"><span class="company-tag highlight">已上市</span><span class="company-tag">TC取证</span></div>
+            </div>
+            <!-- 卡片 2 -->
+            <div class="company-card">
+                <div class="company-header">
+                    <div class="company-logo-box">JO</div>
+                    <div><div style="font-weight:700;">Joby Aviation</div><div style="font-size:0.75rem; color:#94a3b8;">美国 · 加州</div></div>
+                </div>
+                <p class="company-desc">开发全电动垂直起降飞机，与达美航空深度合作。</p>
+                <div class="company-tags"><span class="company-tag highlight">已上市</span><span class="company-tag">美军合作</span></div>
+            </div>
+            <!-- 卡片 3 -->
+            <div class="company-card">
+                <div class="company-header">
+                    <div class="company-logo-box">XP</div>
+                    <div><div style="font-weight:700;">小鹏汇天</div><div style="font-size:0.75rem; color:#94a3b8;">中国 · 广州</div></div>
+                </div>
+                <p class="company-desc">亚洲规模最大的飞行汽车公司，“陆地航母”开启量产。</p>
+                <div class="company-tags"><span class="company-tag">独角兽</span><span class="company-tag">分体式</span></div>
+            </div>
+            <!-- 卡片 4 -->
+            <div class="company-card">
+                <div class="company-header">
+                    <div class="company-logo-box">DJ</div>
+                    <div><div style="font-weight:700;">大疆创新</div><div style="font-size:0.75rem; color:#94a3b8;">中国 · 深圳</div></div>
+                </div>
+                <p class="company-desc">全球民用无人机霸主，进军低空运载领域。</p>
+                <div class="company-tags"><span class="company-tag">物流运输</span><span class="company-tag">消费级</span></div>
+            </div>
+            <!-- 更多模拟卡片，让页面看起来更满 -->
+            <div class="company-card">
+                <div class="company-header">
+                    <div class="company-logo-box">LI</div>
+                    <div><div style="font-weight:700;">Lilium</div><div style="font-size:0.75rem; color:#94a3b8;">德国 · 慕尼黑</div></div>
+                </div>
+                <p class="company-desc">采用涵道风扇技术的 eVTOL 开发商，专注于区域城际交通。</p>
+                <div class="company-tags"><span class="company-tag highlight">已上市</span><span class="company-tag">涵道风扇</span></div>
+            </div>
+            <div class="company-card">
+                <div class="company-header">
+                    <div class="company-logo-box">VO</div>
+                    <div><div style="font-weight:700;">Volocopter</div><div style="font-size:0.75rem; color:#94a3b8;">德国 · 布鲁赫萨尔</div></div>
+                </div>
+                <p class="company-desc">城市空中交通先驱，计划在巴黎奥运会期间提供服务。</p>
+                <div class="company-tags"><span class="company-tag">独角兽</span><span class="company-tag">多旋翼</span></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer>
+        <div class="standard-container">
+            <div class="copyright">&copy; 2025 LowAltitude Insight.</div>
+        </div>
+    </footer>
+    <script>function toggleMenu() { document.getElementById('navMenu').classList.toggle('active'); }</script>
+</body>
+</html>

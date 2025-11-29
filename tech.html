@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>最新动态 | LowAltitude Insight</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <header>
+        <div class="standard-container">
+            <div class="nav-inner">
+                <!-- 1. Logo (点击回首页) -->
+                <a href="index.html" class="logo">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
+                    </svg>
+                    LowAltitude<span>Insight</span>
+                </a>
+
+                <!-- 2. 手机端菜单按钮 (汉堡图标) -->
+                <button class="mobile-menu-btn" onclick="toggleMenu()">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="3" y1="12" x2="21" y2="12"></line>
+                        <line x1="3" y1="6" x2="21" y2="6"></line>
+                        <line x1="3" y1="18" x2="21" y2="18"></line>
+                    </svg>
+                </button>
+
+                <!-- 3. 中间导航链接 -->
+                <nav class="nav-links" id="navMenu">
+                    <a href="index.html">首页</a>
+                    <a href="news.html">资讯快报</a>
+                    <a href="policies.html">政策法规</a>
+                    <a href="tech.html">技术前沿</a>
+                    <a href="companies.html">公司数据库</a>
+                </nav>
+
+                <!-- 4. 右侧功能按钮 -->
+                <div class="header-actions">
+                    <button class="btn btn-outline">搜索</button>
+                    <button class="btn btn-primary">订阅/登录</button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- 页面标题 -->
+    <section class="page-hero">
+        <div class="standard-container">
+            <h1>技术前沿</h1>
+            <p>汇聚全球低空经济最新情报</p>
+        </div>
+    </section>
+
+    <div class="standard-container">
+        <div class="main-layout-grid">
+            <main>
+                <!-- 列表 -->
+                <div class="news-feed">
+                    <article class="news-item">
+                        <div class="news-image" style="background: #cbd5e1 url('https://via.placeholder.com/320x200') center/cover;"></div>
+                        <div class="news-content">
+                            <h3>民航局发布《民用无人驾驶航空器运行安全管理规则》解读</h3>
+                            <div class="news-meta"><span class="tag">政策</span><span>2025-01-15</span></div>
+                            <p style="font-size:0.9rem; color:#64748b; margin-top:8px;">详细解读了新规对于城市物流、空域申请的具体要求...</p>
+                        </div>
+                    </article>
+                    <article class="news-item">
+                        <div class="news-image" style="background: #cbd5e1 url('https://via.placeholder.com/320x200') center/cover;"></div>
+                        <div class="news-content">
+                            <h3>宁德时代发布航空级高能量密度电池</h3>
+                            <div class="news-meta"><span class="tag">技术</span><span>2025-01-14</span></div>
+                            <p style="font-size:0.9rem; color:#64748b; margin-top:8px;">单体能量密度突破 500Wh/kg，将大幅提升电动飞机航程。</p>
+                        </div>
+                    </article>
+                    <!-- 更多新闻项... -->
+                </div>
+            </main>
+
+            <aside>
+                <div class="sidebar-widget">
+                    <div class="widget-title">热门标签</div>
+                    <div style="display:flex; gap:8px; flex-wrap:wrap;">
+                        <span class="tag">eVTOL</span><span class="tag">适航取证</span><span class="tag">无人机物流</span><span class="tag">空域管理</span>
+                    </div>
+                </div>
+            </aside>
+        </div>
+    </div>
+
+    <footer>
+        <div class="standard-container">
+            <div class="copyright">&copy; 2025 LowAltitude Insight.</div>
+        </div>
+    </footer>
+    <script>function toggleMenu() { document.getElementById('navMenu').classList.toggle('active'); }</script>
+</body>
+</html>
