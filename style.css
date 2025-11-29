@@ -149,9 +149,162 @@ header {
 .company-tag { font-size: 0.7rem; padding: 4px 10px; background: #f1f5f9; border-radius: 20px; color: #64748b; }
 .company-tag.highlight { color: var(--primary-blue); background: #eff6ff; }
 
-/* Footer */
-footer { background: var(--primary-dark); color: #94a3b8; padding: 60px 0 20px; margin-top: 60px; }
-.footer-grid { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 40px; margin-bottom: 40px; }
+/* =========================================
+   弹窗样式 (Modal) - 用于图表详情展示
+   ========================================= */
+.modal-overlay {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0, 0, 0, 0.5); backdrop-filter: blur(4px);
+    display: none; justify-content: center; align-items: center; z-index: 2000;
+}
+.modal-box {
+    background: white; padding: 30px; border-radius: 12px;
+    width: 90%; max-width: 500px; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1);
+    position: relative; animation: slideUp 0.3s ease;
+}
+@keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
+.modal-close {
+    position: absolute; top: 15px; right: 15px; font-size: 1.5rem;
+    cursor: pointer; color: #94a3b8; line-height: 1;
+}
+.modal-close:hover { color: #ef4444; }
+
+.modal-title { font-size: 1.25rem; font-weight: 700; color: var(--primary-dark); margin-bottom: 10px; }
+.modal-content { font-size: 0.95rem; color: #475569; line-height: 1.6; }
+.modal-meta { margin-top: 15px; padding-top: 15px; border-top: 1px solid #e2e8f0; font-size: 0.85rem; color: #64748b; }
+
+/* =========================================
+   7. Footer 页脚 (增强版样式)
+   ========================================= */
+footer { 
+    background: var(--primary-dark); 
+    color: #94a3b8; 
+    padding: 80px 0 30px; /* 增加顶部内边距，更显大气 */
+    margin-top: 60px; 
+}
+
+.footer-grid { 
+    display: grid; 
+    grid-template-columns: 2fr 1fr 1fr 1fr; /* 2:1:1:1 比例 */
+    gap: 40px; 
+}
+
+.footer-col h4 { 
+    color: white; 
+    margin-bottom: 20px; 
+    font-size: 1rem; 
+    font-weight: 600;
+}
+
+.footer-col ul li { 
+    margin-bottom: 12px; 
+    font-size: 0.9rem; 
+}
+
+.footer-col a {
+    transition: color 0.2s;
+}
+
+.footer-col a:hover { 
+    color: var(--primary-blue) !important; /* 鼠标悬停变蓝 */
+}
+
+/* 移动端适配：变成单列 */
+@media (max-width: 768px) {
+    .footer-grid { 
+        grid-template-columns: 1fr; 
+        gap: 40px;
+        text-align: center; /* 手机端居中更好看 */
+    }
+    
+    /* 手机端图标也居中 */
+    .brand-col div {
+        justify-content: center;
+    }
+}
+
+/* 1. 政策法规列表 */
+.policy-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.policy-list li {
+    padding: 15px 0; /* 上下间距加大，更透气 */
+    border-bottom: 1px dashed #e2e8f0; /* 虚线分隔符 */
+    display: flex;
+    flex-direction: column; /* 垂直排列：标题在上，标签在下 */
+    gap: 8px; /* 标题和标签的距离 */
+}
+
+.policy-list li:last-child {
+    border-bottom: none; /* 最后一个去掉虚线 */
+}
+
+.policy-list a {
+    font-size: 0.95rem;
+    color: #334155;
+    font-weight: 400;
+    line-height: 1.5;
+    display: block;
+}
+
+.policy-list a:hover {
+    color: var(--primary-blue);
+}
+
+.policy-region {
+    align-self: flex-start; /* 靠左对齐 */
+    background-color: #f1f5f9; /* 浅灰背景 */
+    color: #64748b; /* 灰色文字 */
+    font-size: 0.75rem; /* 小字号 */
+    padding: 2px 6px;
+    border-radius: 2px; /* 微圆角 */
+    line-height: 1;
+}
+
+/* 2. 专家观点卡片 */
+.expert-profile {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 15px;
+}
+
+.expert-avatar {
+    width: 48px;
+    height: 48px;
+    background-color: #cbd5e1; /* 灰色圆形占位 */
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.expert-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.expert-name {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #1e293b;
+    line-height: 1.2;
+}
+
+.expert-role {
+    font-size: 0.8rem;
+    color: #64748b;
+    margin-top: 4px;
+}
+
+.expert-quote {
+    font-size: 0.9rem;
+    color: #475569;
+    font-style: italic; /* 斜体 */
+    line-height: 1.6;
+}
 
 /* 响应式 */
 @media (max-width: 1024px) {

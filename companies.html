@@ -68,7 +68,7 @@
 
     <!-- 公司列表 (展示更多) -->
     <div class="standard-container">
-        <div class="company-grid" style="margin-bottom: 60px;">
+        <div class="company-grid" id="company-container" style="margin-bottom: 60px;">
             <!-- 卡片 1 -->
             <div class="company-card">
                 <div class="company-header">
@@ -132,5 +132,75 @@
         </div>
     </footer>
     <script>function toggleMenu() { document.getElementById('navMenu').classList.toggle('active'); }</script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+    // =================配置区域=================
+    // 1. 替换为你的 Project URL
+    const supabaseUrl = 'https://cpvisbzlzatfdqakqsul.supabase.co'; 
+    // 2. 替换为你的 anon key (public)
+    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNwdmlzYnpsemF0ZmRxYWtxc3VsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQzOTgwMTYsImV4cCI6MjA3OTk3NDAxNn0.R__eoUjpzFP9_SUxIVnM9T1zpl1pcBTGMzxXLf-Orcg';
+    // 初始化客户端
+    const _supabase = supabase.createClient(supabaseUrl, supabaseKey);
+    // ===========================================
+
+    document.addEventListener('DOMContentLoaded', async function() {
+        const container = document.getElementById('company-container');
+
+        // 1. 从 companies 表查询
+        const { data, error } = await _supabase
+            .from('companies')
+            .select('*')
+            .order('id', { ascending: true }); // 按ID排序
+
+        if (error) {
+            console.error('Error:', error);
+            return;
+        }
+        
+        if (!data || data.length === 0) {
+            container.innerHTML = '<p>暂无公司数据</p>';
+            return;
+        }
+
+        container.innerHTML = '';
+
+        data.forEach(item => {
+            // 2. 处理标签数组 (Array -> HTML)
+            let tagsHtml = '';
+            // 确保 tags 存在且是数组
+            if (item.tags && Array.isArray(item.tags)) {
+                item.tags.forEach(tag => {
+                    // 如果是"已上市"或"独角兽"，加个高亮样式
+                    const isHighlight = (tag === '已上市' || tag === '独角兽');
+                    const highlightClass = isHighlight ? 'highlight' : '';
+                    
+                    tagsHtml += `<span class="company-tag ${highlightClass}">${tag}</span>`;
+                });
+            } else if (typeof item.tags === 'string') {
+                // 防御性代码：如果导入CSV时变成了字符串 "{a,b}"，尝试简单处理一下
+                tagsHtml = `<span class="company-tag">${item.tags.replace(/[{}""]/g, '')}</span>`;
+            }
+
+            // 3. 渲染卡片
+            const html = `
+                <div class="company-card">
+                    <div class="company-header">
+                        <!-- 如果没有logo图，就显示文字缩写 -->
+                        <div class="company-logo-box">${item.logo_text || item.name.substring(0,2)}</div>
+                        <div>
+                            <div style="font-weight:700;">${item.name}</div>
+                            <div style="font-size:0.75rem; color:#94a3b8;">${item.location}</div>
+                        </div>
+                    </div>
+                    <p class="company-desc">${item.description}</p>
+                    <div class="company-tags">
+                        ${tagsHtml}
+                    </div>
+                </div>
+            `;
+            container.innerHTML += html;
+        });
+    });
+</script>
 </body>
 </html>

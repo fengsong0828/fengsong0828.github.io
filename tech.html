@@ -58,23 +58,8 @@
         <div class="main-layout-grid">
             <main>
                 <!-- 列表 -->
-                <div class="news-feed">
-                    <article class="news-item">
-                        <div class="news-image" style="background: #cbd5e1 url('https://via.placeholder.com/320x200') center/cover;"></div>
-                        <div class="news-content">
-                            <h3>民航局发布《民用无人驾驶航空器运行安全管理规则》解读</h3>
-                            <div class="news-meta"><span class="tag">政策</span><span>2025-01-15</span></div>
-                            <p style="font-size:0.9rem; color:#64748b; margin-top:8px;">详细解读了新规对于城市物流、空域申请的具体要求...</p>
-                        </div>
-                    </article>
-                    <article class="news-item">
-                        <div class="news-image" style="background: #cbd5e1 url('https://via.placeholder.com/320x200') center/cover;"></div>
-                        <div class="news-content">
-                            <h3>宁德时代发布航空级高能量密度电池</h3>
-                            <div class="news-meta"><span class="tag">技术</span><span>2025-01-14</span></div>
-                            <p style="font-size:0.9rem; color:#64748b; margin-top:8px;">单体能量密度突破 500Wh/kg，将大幅提升电动飞机航程。</p>
-                        </div>
-                    </article>
+                <div class="news-feed" id="tech-container">
+                    <div style="text-align:center; padding:20px; color:#999;">正在加载技术前沿...</div>
                     <!-- 更多新闻项... -->
                 </div>
             </main>
@@ -96,5 +81,69 @@
         </div>
     </footer>
     <script>function toggleMenu() { document.getElementById('navMenu').classList.toggle('active'); }</script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+    // =================配置区域=================
+    // 1. 替换为你的 Project URL
+    const supabaseUrl = 'https://cpvisbzlzatfdqakqsul.supabase.co'; 
+    // 2. 替换为你的 anon key (public)
+    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNwdmlzYnpsemF0ZmRxYWtxc3VsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQzOTgwMTYsImV4cCI6MjA3OTk3NDAxNn0.R__eoUjpzFP9_SUxIVnM9T1zpl1pcBTGMzxXLf-Orcg';
+    // 初始化客户端
+    const _supabase = supabase.createClient(supabaseUrl, supabaseKey);
+    // ===========================================
+
+    document.addEventListener('DOMContentLoaded', async function() {
+        const container = document.getElementById('tech-container');
+
+        // 1. 从 tech_trends 表查询
+        const { data, error } = await _supabase
+            .from('tech_trends')
+            .select('*')
+            .order('publish_date', { ascending: false });
+
+        if (error) {
+            console.error('Error:', error);
+            container.innerHTML = '<p style="text-align:center; color:red;">加载失败</p>';
+            return;
+        }
+
+        if (!data || data.length === 0) {
+            container.innerHTML = '<p style="text-align:center;">暂无数据</p>';
+            return;
+        }
+
+        container.innerHTML = '';
+
+        data.forEach(item => {
+            // 2. 根据类型设置不同的标签颜色
+            let tagColor = '#3b82f6'; // 默认蓝
+            let tagBg = '#eff6ff';
+            
+            if (item.type === '学术论文') { tagColor = '#8b5cf6'; tagBg = '#f5f3ff'; } // 紫色
+            else if (item.type === '发明专利') { tagColor = '#059669'; tagBg = '#ecfdf5'; } // 绿色
+            else if (item.type === '新产品') { tagColor = '#d97706'; tagBg = '#fffbeb'; } // 橙色
+
+            const bgStyle = item.image_url 
+                ? `background: #cbd5e1 url('${item.image_url}') center/cover;` 
+                : `background: #cbd5e1;`;
+
+            const html = `
+                <article class="news-item">
+                    <div class="news-image" style="${bgStyle}"></div>
+                    <div class="news-content">
+                        <h3><a href="#">${item.title}</a></h3>
+                        <div class="news-meta">
+                            <span class="tag" style="color:${tagColor}; background:${tagBg};">${item.type}</span>
+                            <span style="font-weight:500; color:#475569;">${item.org}</span>
+                            <span>${item.publish_date}</span>
+                        </div>
+                        <p style="font-size:0.9rem; color:#64748b; margin-top:8px;">${item.summary}</p>
+                    </div>
+                </article>
+            `;
+            container.innerHTML += html;
+        });
+    });
+</script>
 </body>
 </html>

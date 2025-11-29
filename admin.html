@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>全站后台管理 | LowAltitude Insight</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        /* 后台布局样式 */
+        .admin-container { max-width: 1200px; margin: 40px auto; padding: 0 20px; }
+        .admin-top-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        
+        /* Tab 切换栏 */
+        .table-tabs { display: flex; gap: 10px; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px; margin-bottom: 20px; }
+        .tab-btn { 
+            padding: 8px 20px; border: none; background: none; font-size: 1rem; 
+            font-weight: 600; color: #64748b; cursor: pointer; border-radius: 6px; 
+        }
+        .tab-btn:hover { background: #f1f5f9; }
+        .tab-btn.active { background: #e0f2fe; color: #0284c7; }
+
+        /* 表格样式 */
+        .data-table { width: 100%; border-collapse: collapse; background: white; border-radius: 8px; overflow: hidden; box-shadow: var(--card-shadow); table-layout: fixed; }
+        .data-table th, .data-table td { padding: 12px 15px; text-align: left; border-bottom: 1px solid #f1f5f9; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .data-table th { background: #f8fafc; font-weight: 600; color: #64748b; font-size: 0.9rem; }
+        .data-table tr:hover { background: #f8fafc; }
+        
+        /* 按钮 */
+        .action-btn { padding: 4px 10px; border-radius: 4px; font-size: 0.8rem; cursor: pointer; border: none; margin-right: 5px; color: white;}
+        .btn-edit { background: #3b82f6; }
+        .btn-delete { background: #ef4444; }
+
+        /* 动态表单样式 */
+        .form-row { margin-bottom: 15px; }
+        .form-row label { display: block; margin-bottom: 5px; font-weight: 600; font-size: 0.9rem; color: #334155; }
+        .form-row input, .form-row select, .form-row textarea { width: 100%; padding: 8px; border: 1px solid #cbd5e1; border-radius: 4px; font-family: inherit; }
+        .form-row textarea { height: 80px; resize: vertical; }
+        .modal-box { max-width: 600px; max-height: 90vh; overflow-y: auto; }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="standard-container">
+            <div class="nav-inner">
+                <a href="index.html" class="logo">LowAltitude<span>Admin</span></a>
+                <div style="display:flex; gap:15px; align-items:center;">
+                    <span id="admin-name" style="font-size:0.9rem; font-weight:bold;">Loading...</span>
+                    <a href="index.html" style="font-size:0.9rem; color:#64748b;">退出后台</a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="admin-container">
+        <!-- 1. 顶部切换栏 -->
+        <div class="admin-top-bar">
+            <div class="table-tabs">
+                <button class="tab-btn active" onclick="switchTable('news')">资讯快报</button>
+                <button class="tab-btn" onclick="switchTable('policies')">政策法规</button>
+                <button class="tab-btn" onclick="switchTable('tech_trends')">技术前沿</button>
+                <button class="tab-btn" onclick="switchTable('companies')">公司数据库</button>
+            </div>
+            <button class="btn btn-primary" onclick="openModal()">+ 新增数据</button>
+        </div>
+
+        <!-- 2. 通用数据表格 -->
+        <div style="overflow-x: auto;">
+            <table class="data-table">
+                <thead id="table-head">
+                    <!-- JS 自动生成表头 -->
+                </thead>
+                <tbody id="table-body">
+                    <tr><td style="text-align:center;">请选择数据表...</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- 3. 通用编辑弹窗 -->
+    <div class="modal-overlay" id="edit-modal">
+        <div class="modal-box">
+            <div class="modal-close" onclick="closeModal()">×</div>
+            <div class="modal-title" id="modal-title">编辑数据</div>
+            
+            <!-- 动态生成的表单容器 -->
+            <div id="dynamic-form"></div>
+
+            <div style="margin-top:20px;">
+                <button class="btn btn-primary" style="width:100%;" onclick="saveData()">保存提交</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+        // ================= 配置 Supabase =================
+        // 1. 替换为你的 Project URL
+        const supabaseUrl = 'https://cpvisbzlzatfdqakqsul.supabase.co'; 
+        // 2. 替换为你的 anon key (public)
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNwdmlzYnpsemF0ZmRxYWtxc3VsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQzOTgwMTYsImV4cCI6MjA3OTk3NDAxNn0.R__eoUjpzFP9_SUxIVnM9T1zpl1pcBTGMzxXLf-Orcg';
+         
+        const _supabase = supabase.createClient(supabaseUrl, supabaseKey);
+
+        // ===============================================
+        // ★★★ 核心配置：定义每个表有哪些字段 ★★★
+        // type: 'text' | 'date' | 'textarea' | 'select' | 'array'(对应 text[]) | 'boolean'
+        // listShow: true 表示在列表页显示这一列
+        // ===============================================
+        const SCHEMAS = {
+            news: {
+                label: '资讯快报',
+                fields: [
+                    { key: 'title', label: '标题', type: 'text', listShow: true },
+                    { key: 'category', label: '分类', type: 'select', options: ['政策法规','资本动态','技术前沿','市场动态','国际动态'], listShow: true },
+                    { key: 'publish_date', label: '日期', type: 'date', listShow: true },
+                    { key: 'source', label: '来源', type: 'text', listShow: true },
+                    { key: 'image_url', label: '图片路径', type: 'text' },
+                    { key: 'summary', label: '摘要', type: 'textarea' }
+                ],
+                sort: { col: 'publish_date', order: false } // 按日期倒序
+            },
+            policies: {
+                label: '政策法规',
+                fields: [
+                    { key: 'title', label: '政策名称', type: 'text', listShow: true },
+                    { key: 'department', label: '发布部门', type: 'text', listShow: true },
+                    { key: 'level', label: '层级', type: 'select', options: ['国家部委','地方政府','行业协会','国际组织'], listShow: true },
+                    { key: 'region_type', label: '区域', type: 'select', options: ['国内','国际'], listShow: true },
+                    { key: 'publish_date', label: '发布日期', type: 'date', listShow: true },
+                    { key: 'file_url', label: '文件链接', type: 'text' },
+                    { key: 'summary', label: '解读摘要', type: 'textarea' }
+                ],
+                sort: { col: 'publish_date', order: false }
+            },
+            tech_trends: {
+                label: '技术前沿',
+                fields: [
+                    { key: 'title', label: '标题', type: 'text', listShow: true },
+                    { key: 'type', label: '类型', type: 'select', options: ['学术论文','发明专利','新产品','技术白皮书'], listShow: true },
+                    { key: 'org', label: '机构/作者', type: 'text', listShow: true },
+                    { key: 'publish_date', label: '日期', type: 'date', listShow: true },
+                    { key: 'image_url', label: '图片路径', type: 'text' },
+                    { key: 'summary', label: '技术简介', type: 'textarea' }
+                ],
+                sort: { col: 'publish_date', order: false }
+            },
+            companies: {
+                label: '公司库',
+                fields: [
+                    { key: 'name', label: '公司名称', type: 'text', listShow: true },
+                    { key: 'logo_text', label: 'Logo缩写', type: 'text', placeholder: '如: EH' },
+                    { key: 'location', label: '所在地', type: 'text', listShow: true },
+                    { key: 'tags', label: '标签 (逗号分隔)', type: 'array', placeholder: 'eVTOL,已上市', listShow: true },
+                    { key: 'is_listed', label: '是否上市', type: 'boolean' },
+                    { key: 'description', label: '简介', type: 'textarea' }
+                ],
+                sort: { col: 'id', order: true }
+            }
+        };
+
+        // 当前状态
+        let currentTable = 'news';
+        let currentEditId = null; // null 表示新增，有值表示修改
+
+        // ================= 1. 初始化 & 权限 =================
+        document.addEventListener('DOMContentLoaded', async function() {
+            const { data: { session } } = await _supabase.auth.getSession();
+            if (!session) { location.href = 'login.html'; return; }
+
+            const { data: profile } = await _supabase
+                .from('profiles').select('is_admin, username').eq('id', session.user.id).single();
+
+            if (!profile || profile.is_admin !== true) {
+                alert('权限不足'); location.href = 'index.html'; return;
+            }
+
+            document.getElementById('admin-name').innerText = `管理员: ${profile.username}`;
+            switchTable('news'); // 默认加载新闻
+        });
+
+        // ================= 2. 切换表格逻辑 =================
+        function switchTable(tableName) {
+            currentTable = tableName;
+            
+            // 更新 Tab 样式
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.innerText === SCHEMAS[tableName].label);
+            });
+
+            // 渲染表头
+            const thead = document.getElementById('table-head');
+            const schema = SCHEMAS[tableName];
+            let headHtml = '<tr>';
+            schema.fields.forEach(f => {
+                if (f.listShow) headHtml += `<th>${f.label}</th>`;
+            });
+            headHtml += '<th width="120">操作</th></tr>';
+            thead.innerHTML = headHtml;
+
+            // 加载数据
+            loadList();
+        }
+
+        async function loadList() {
+            const tbody = document.getElementById('table-body');
+            tbody.innerHTML = '<tr><td colspan="10" style="text-align:center;">加载中...</td></tr>';
+
+            const schema = SCHEMAS[currentTable];
+            const { data, error } = await _supabase
+                .from(currentTable)
+                .select('*')
+                .order(schema.sort.col, { ascending: schema.sort.order });
+
+            if (error) { tbody.innerHTML = '<tr><td colspan="10" style="color:red;">加载失败</td></tr>'; return; }
+
+            tbody.innerHTML = '';
+            data.forEach(item => {
+                const tr = document.createElement('tr');
+                let rowHtml = '';
+                
+                // 渲染列
+                schema.fields.forEach(f => {
+                    if (f.listShow) {
+                        let val = item[f.key];
+                        if (f.type === 'array' && Array.isArray(val)) val = val.join(', '); // 数组转字符串显示
+                        if (f.type === 'boolean') val = val ? '✅' : '❌';
+                        rowHtml += `<td>${val || '-'}</td>`;
+                    }
+                });
+
+                // 操作列
+                rowHtml += `
+                    <td>
+                        <button class="action-btn btn-edit" onclick='editItem(${JSON.stringify(item)})'>编辑</button>
+                        <button class="action-btn btn-delete" onclick="deleteItem('${item.id}')">删除</button>
+                    </td>`;
+                
+                tr.innerHTML = rowHtml;
+                tbody.appendChild(tr);
+            });
+        }
+
+        // ================= 3. 动态表单生成 =================
+        function openModal(item = null) {
+            currentEditId = item ? item.id : null;
+            document.getElementById('modal-title').innerText = item ? `编辑 ${SCHEMAS[currentTable].label}` : `新增 ${SCHEMAS[currentTable].label}`;
+            const formContainer = document.getElementById('dynamic-form');
+            let html = '';
+
+            SCHEMAS[currentTable].fields.forEach(f => {
+                let value = item ? (item[f.key] || '') : '';
+                
+                // 特殊处理：数组转逗号字符串
+                if (f.type === 'array' && Array.isArray(value)) value = value.join(',');
+
+                html += `<div class="form-row"><label>${f.label}</label>`;
+
+                if (f.type === 'select') {
+                    html += `<select id="field-${f.key}">`;
+                    f.options.forEach(opt => {
+                        const selected = value === opt ? 'selected' : '';
+                        html += `<option value="${opt}" ${selected}>${opt}</option>`;
+                    });
+                    html += `</select>`;
+                } else if (f.type === 'textarea') {
+                    html += `<textarea id="field-${f.key}">${value}</textarea>`;
+                } else if (f.type === 'date') {
+                    html += `<input type="date" id="field-${f.key}" value="${value}">`;
+                } else if (f.type === 'boolean') {
+                    const checked = value ? 'checked' : '';
+                    // 简单的下拉框做布尔值
+                    html += `<select id="field-${f.key}"><option value="true" ${value===true?'selected':''}>是</option><option value="false" ${value===false?'selected':''}>否</option></select>`;
+                } else {
+                    // 默认 text
+                    html += `<input type="text" id="field-${f.key}" value="${value}" placeholder="${f.placeholder || ''}">`;
+                }
+                html += `</div>`;
+            });
+
+            formContainer.innerHTML = html;
+            document.getElementById('edit-modal').style.display = 'flex';
+        }
+
+        window.editItem = function(item) {
+            openModal(item); // 复用 openModal，传入数据就是编辑模式
+        }
+
+        // ================= 4. 保存与删除 =================
+        async function saveData() {
+            const formData = {};
+            const schema = SCHEMAS[currentTable];
+
+            // 收集数据
+            schema.fields.forEach(f => {
+                const el = document.getElementById(`field-${f.key}`);
+                let val = el.value;
+
+                // 特殊类型转换
+                if (f.type === 'array') {
+                    // "a, b, c" -> ["a", "b", "c"]
+                    val = val ? val.split(/[,，]/).map(s => s.trim()).filter(s => s) : [];
+                }
+                if (f.type === 'boolean') {
+                    val = (val === 'true');
+                }
+                formData[f.key] = val;
+            });
+
+            let error;
+            if (currentEditId) {
+                // Update
+                const res = await _supabase.from(currentTable).update(formData).eq('id', currentEditId);
+                error = res.error;
+            } else {
+                // Insert
+                const res = await _supabase.from(currentTable).insert([formData]);
+                error = res.error;
+            }
+
+            if (error) {
+                alert('保存失败: ' + error.message);
+            } else {
+                alert('成功！');
+                closeModal();
+                loadList();
+            }
+        }
+
+        async function deleteItem(id) {
+            if (!confirm('确定删除吗？')) return;
+            const { error } = await _supabase.from(currentTable).delete().eq('id', id);
+            if (error) alert('删除失败'); else loadList();
+        }
+
+        function closeModal() { document.getElementById('edit-modal').style.display = 'none'; }
+    </script>
+</body>
+</html>

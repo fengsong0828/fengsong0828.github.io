@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>行业全景图谱 | LowAltitude Insight</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/echarts@4.9.0/map/js/world.js"></script>
+    <style>
+        /* Tab 切换按钮样式 */
+        .chart-tabs { display: flex; justify-content: center; gap: 20px; margin-bottom: 30px; }
+        .chart-tab-btn {
+            padding: 10px 24px;
+            font-size: 1rem;
+            font-weight: 600;
+            color: #64748b;
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 30px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+        .chart-tab-btn.active {
+            background: var(--primary-blue);
+            color: white;
+            border-color: var(--primary-blue);
+            box-shadow: 0 4px 10px rgba(59, 130, 246, 0.3);
+        }
+        .chart-view { display: none; animation: fadeIn 0.5s; } /* 默认隐藏 */
+        .chart-view.active { display: block; } /* 激活显示 */
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header><div class="standard-container"><div class="nav-inner"><a href="index.html" class="logo">LowAltitude<span>Insight</span></a><a href="index.html" style="font-size:0.9rem; color:#64748b;">← 返回首页</a></div></div></header>
+
+    <section class="page-hero"><div class="standard-container"><h1>低空经济产业全景图谱</h1><p>全球企业分布与产业链关系解析</p></div></section>
+
+    <div class="standard-container">
+        <!-- 切换按钮区 -->
+        <div class="chart-tabs">
+            <button class="chart-tab-btn active" onclick="switchTab('world')">全球企业分布</button>
+            <button class="chart-tab-btn" onclick="switchTab('graph')">产业链关系网</button>
+        </div>
+
+        <!-- 视图 1: 全球地图 (默认显示) -->
+        <div id="view-world" class="chart-view active">
+            <div id="world-map-container" style="width: 100%; height: 600px; border-radius: 12px; background: #f8fafc;"></div>
+        </div>
+
+        <!-- 视图 2: 关系图谱 (默认隐藏) -->
+        <div id="view-graph" class="chart-view">
+            <div id="graph-container" style="width: 100%; height: 600px; background: #fff; border-radius: 12px; box-shadow: var(--card-shadow);"></div>
+        </div>
+    </div>
+
+    <!-- 详情弹窗 -->
+    <div class="modal-overlay" id="info-modal"><div class="modal-box"><div class="modal-close" onclick="closeModal()">×</div><div class="modal-title" id="m-title"></div><div class="modal-content" id="m-content"></div><div class="modal-meta" id="m-meta"></div></div></div>
+
+    <!-- Footer -->
+    <footer><div class="standard-container"><div class="copyright">&copy; 2025 LowAltitude Insight.</div></div></footer>
+
+    <script>
+        // 全局变量保存图表实例，以便 resize
+        var worldChart, graphChart;
+
+        // === 1. 初始化全球地图 ===
+        function initWorldMap() {
+            if (worldChart) return; // 避免重复初始化
+            worldChart = echarts.init(document.getElementById('world-map-container'));
+            
+            var countryData = [
+                { name: 'China', value: 350, detail: '全球最大的无人机制造基地，eVTOL 商业化进程领先。' },
+                { name: 'United States', value: 280, detail: '拥有 Joby, Archer 等头部上市公司。' },
+                { name: 'Germany', value: 120, detail: 'Lilium, Volocopter 总部所在地。' },
+                { name: 'United Kingdom', value: 60, detail: '罗尔斯·罗伊斯等传统航空巨头转型。' },
+                { name: 'Japan', value: 45, detail: '丰田、本田积极投资 eVTOL。' },
+                { name: 'France', value: 40, detail: '空中客车城市空中交通项目推进中。' },
+                { name: 'Brazil', value: 30, detail: '巴航工业旗下 Eve 拥有大量意向订单。' }
+            ];
+
+            var option = {
+                tooltip: { trigger: 'item', formatter: '{b}: {c} 家企业' },
+                visualMap: {
+                    min: 0, max: 400, left: 'left', bottom: 'bottom',
+                    text: ['高', '低'], calculable: true,
+                    inRange: { color: ['#e0f2fe', '#3b82f6', '#1e3a8a'] }
+                },
+                series: [{
+                    type: 'map',
+                    mapType: 'world',
+                    roam: false, // ★★★ 禁止缩放 ★★★
+                    center: [10, 20], // ★★★ 调整中心点 (经度10, 纬度20)，让地图居中 ★★★
+                    zoom: 1.2,        // ★★★ 放大比例 ★★★
+                    emphasis: { label: { show: false }, itemStyle: { areaColor: '#f59e0b' } },
+                    itemStyle: { areaColor: '#f1f5f9', borderColor: '#94a3b8' },
+                    data: countryData
+                }]
+            };
+            worldChart.setOption(option);
+            
+            worldChart.on('click', function (params) {
+                if (params.data) showModal(params.name, params.data.detail, '企业数: ' + params.value);
+            });
+        }
+
+        // === 2. 初始化关系图谱 ===
+        function initGraph() {
+            if (graphChart) return;
+            graphChart = echarts.init(document.getElementById('graph-container'));
+            
+            var graphData = {
+                nodes: [
+                    { id: '0', name: '亿航智能', category: 0, value: '市值: $1B', desc: '全球领先的自动驾驶飞行器企业' },
+                    { id: '1', name: 'Joby', category: 0, value: '市值: $4B', desc: '美国eVTOL龙头' },
+                    { id: '2', name: '宁德时代', category: 1, value: '电池供应', desc: '提供航空级凝聚态电池' },
+                    { id: '3', name: '顺丰丰翼', category: 2, value: '物流运营', desc: '国内最大的无人机物流运营商' },
+                    { id: '4', name: '小鹏汇天', category: 0, value: '独角兽', desc: '陆空两栖飞行汽车' },
+                    { id: '5', name: '华为', category: 3, value: '通信/飞控', desc: '5.5G 通感一体化技术' },
+                    { id: '6', name: '中信海直', category: 2, value: '运营服务', desc: '传统通航运营转型' }
+                ],
+                links: [
+                    { source: '2', target: '0' }, { source: '2', target: '4' },
+                    { source: '5', target: '0' }, { source: '5', target: '3' },
+                    { source: '0', target: '6' }, { source: '1', target: '2' }
+                ],
+                categories: [{name: '主机厂'}, {name: '供应链'}, {name: '运营商'}, {name: '基础设施'}]
+            };
+
+            var option = {
+                tooltip: {},
+                legend: [{ data: graphData.categories.map(function (a) { return a.name; }) }],
+                animationDuration: 1500,
+                animationEasingUpdate: 'quinticInOut',
+                series: [{
+                    type: 'graph',
+                    layout: 'force',
+                    data: graphData.nodes.map(function (node) {
+                        return { id: node.id, name: node.name, symbolSize: 45, category: node.category, value: node.value, extraDesc: node.desc };
+                    }),
+                    links: graphData.links,
+                    categories: graphData.categories,
+                    roam: true,
+                    label: { show: true, position: 'right', formatter: '{b}' },
+                    force: { repulsion: 800, edgeLength: 150 }
+                }]
+            };
+            graphChart.setOption(option);
+            
+            graphChart.on('click', function (params) {
+                if (params.dataType === 'node') showModal(params.data.name, params.data.extraDesc, params.data.value);
+            });
+        }
+
+        // === Tab 切换逻辑 ===
+        function switchTab(tabName) {
+            // 1. 切换按钮样式
+            const btns = document.querySelectorAll('.chart-tab-btn');
+            btns.forEach(btn => btn.classList.remove('active'));
+            // 根据点击的内容给对应按钮加 active，这里简单处理，顺序固定：0是world，1是graph
+            if(tabName === 'world') btns[0].classList.add('active');
+            else btns[1].classList.add('active');
+
+            // 2. 切换显示区域
+            document.getElementById('view-world').classList.remove('active');
+            document.getElementById('view-graph').classList.remove('active');
+            document.getElementById('view-' + tabName).classList.add('active');
+
+            // 3. 懒加载图表（只有切过去的时候才初始化，节省资源）
+            if (tabName === 'graph') {
+                // 稍微延时一点，确保 div 已经 display:block 拥有了宽高
+                setTimeout(() => {
+                    initGraph(); 
+                    if(graphChart) graphChart.resize(); // 强制重绘一次，防止宽度塌陷
+                }, 100);
+            }
+        }
+
+        // === 页面加载后 ===
+        document.addEventListener('DOMContentLoaded', function() {
+            initWorldMap(); // 默认加载地图
+        });
+
+        // === 通用逻辑 ===
+        function showModal(t, c, m) { 
+            document.getElementById('m-title').innerText = t; 
+            document.getElementById('m-content').innerText = c; 
+            document.getElementById('m-meta').innerText = m; 
+            document.getElementById('info-modal').style.display = 'flex'; 
+        }
+        function closeModal() { document.getElementById('info-modal').style.display = 'none'; }
+        
+        window.addEventListener('resize', function() { 
+            if(worldChart) worldChart.resize(); 
+            if(graphChart) graphChart.resize(); 
+        });
+    </script>
+</body>
+</html>

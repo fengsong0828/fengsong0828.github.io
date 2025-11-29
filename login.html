@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>登录 / 注册 | LowAltitude Insight</title>
+    <style>
+        body { margin: 0; padding: 0; font-family: 'Inter', sans-serif; background-color: #f1f5f9; height: 100vh; display: flex; align-items: center; justify-content: center; }
+        .auth-card { background: white; padding: 40px; border-radius: 12px; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.1); width: 100%; max-width: 360px; }
+        .auth-header { text-align: center; margin-bottom: 30px; }
+        .auth-header h2 { margin: 0 0 10px; color: #0f172a; }
+        .auth-header p { margin: 0; color: #64748b; font-size: 0.9rem; }
+        .form-group { margin-bottom: 20px; }
+        label { display: block; margin-bottom: 8px; font-size: 0.85rem; font-weight: 600; color: #334155; }
+        input { width: 100%; padding: 10px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 1rem; box-sizing: border-box; }
+        .btn-submit { width: 100%; padding: 12px; background: #3b82f6; color: white; border: none; border-radius: 6px; font-size: 1rem; font-weight: 600; cursor: pointer; }
+        .btn-submit:hover { background: #2563eb; }
+        .switch-mode { text-align: center; margin-top: 20px; font-size: 0.9rem; color: #64748b; }
+        .switch-mode a { color: #3b82f6; text-decoration: none; font-weight: 600; cursor: pointer; }
+        #error-msg { color: #ef4444; font-size: 0.85rem; text-align: center; margin-top: 15px; display: none; }
+        #success-msg { color: #10b981; font-size: 0.85rem; text-align: center; margin-top: 15px; display: none; }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+    <div class="auth-card">
+        <div class="auth-header">
+            <h2 id="page-title">欢迎回来</h2>
+            <p id="page-desc">请输入您的账号密码进行登录</p>
+        </div>
+        <div class="form-group"><label>电子邮箱</label><input type="email" id="email" placeholder="name@example.com"></div>
+        <div class="form-group"><label>密码</label><input type="password" id="password" placeholder="至少 6 位字符"></div>
+        <button class="btn-submit" onclick="handleAuth()" id="submit-btn">登录</button>
+        <div id="error-msg"></div><div id="success-msg"></div>
+        <div class="switch-mode"><span id="switch-text">还没有账号？</span><a onclick="toggleMode()" id="switch-btn">立即注册</a></div>
+        <div style="text-align:center; margin-top:20px;"><a href="index.html" style="font-size:0.85rem; color:#94a3b8; text-decoration:none;">← 返回首页</a></div>
+    </div>
+
+    <script>
+        // ★★★ 请替换为你的 Config ★★★
+        // =================配置区域=================
+        // 1. 替换为你的 Project URL
+        const supabaseUrl = 'https://cpvisbzlzatfdqakqsul.supabase.co'; 
+        // 2. 替换为你的 anon key (public)
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNwdmlzYnpsemF0ZmRxYWtxc3VsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQzOTgwMTYsImV4cCI6MjA3OTk3NDAxNn0.R__eoUjpzFP9_SUxIVnM9T1zpl1pcBTGMzxXLf-Orcg';
+        
+        const supabaseClient  = supabase.createClient(supabaseUrl, supabaseKey);
+        
+        // 第二步：定义变量
+        let isLoginMode = true;
+
+        // 第三步：定义函数
+        function toggleMode() {
+            isLoginMode = !isLoginMode;
+            document.getElementById('page-title').innerText = isLoginMode ? '欢迎回来' : '创建账号';
+            document.getElementById('page-desc').innerText = isLoginMode ? '请输入您的账号密码进行登录' : '注册成为低空经济洞察会员';
+            document.getElementById('submit-btn').innerText = isLoginMode ? '登录' : '注册';
+            document.getElementById('switch-text').innerText = isLoginMode ? '还没有账号？' : '已有账号？';
+            document.getElementById('switch-btn').innerText = isLoginMode ? '立即注册' : '去登录';
+            
+            // 清空消息
+            document.getElementById('error-msg').style.display = 'none';
+            document.getElementById('success-msg').style.display = 'none';
+        }
+
+        async function handleAuth() {
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const errorBox = document.getElementById('error-msg');
+            const successBox = document.getElementById('success-msg');
+
+            errorBox.style.display = 'none';
+            successBox.style.display = 'none';
+            if (!email || !password) {
+                errorBox.innerText = '请填写邮箱和密码';
+                errorBox.style.display = 'block';
+                return;
+            }
+
+            try {
+                if (isLoginMode) {
+                    const { data, error } = await supabaseClient.auth.signInWithPassword({
+                        email: email,
+                        password: password
+                    });
+                    if (error) throw error;
+                    successBox.innerText = '登录成功！正在跳转...'; 
+                    successBox.style.display = 'block';
+                    setTimeout(() => { window.location.href = 'index.html'; }, 1000);
+                } else {
+                    // --- 注册逻辑 ---
+                    const { data, error } = await supabaseClient.auth.signUp({
+                        email: email,
+                        password: password
+                    });
+
+                    if (error) throw error;
+
+                    // 写入 profiles
+                    if (data.user) {
+                        const { error: profileError } = await supabaseClient
+                            .from('profiles')
+                            .insert([
+                                { 
+                                    id: data.user.id, // 关键关联ID
+                                    email: email,
+                                    username: email.split('@')[0],
+                                    created_at: new Date()
+                                }
+                            ]);
+                            
+                        if (profileError) {
+                            console.error("Profile写入错误:", profileError);
+                            // 即使 Profile 写入失败，账号其实也注册成功了，可以让用户通过
+                        }
+                    }
+
+                    successBox.innerText = '注册成功！已自动登录，正在跳转...'; 
+                    successBox.style.display = 'block';
+                    setTimeout(() => { window.location.href = 'index.html'; }, 1500);
+                    //  // === 注册逻辑 (极简版) ===
+                    // console.log("1. 开始注册...");
+                    
+                    // // 只负责注册，写入 profiles 交给刚才运行的 SQL Trigger
+                    // const { data, error } = await supabaseClient.auth.signUp({
+                    //     email: email,
+                    //     password: password
+                    // });
+                    
+                    // if (error) {
+                    //     alert("注册失败: " + error.message);
+                    //     return;
+                    // }
+
+                    // console.log("2. 注册成功");
+                    // successBox.innerText = '注册成功！已自动登录，正在跳转...';
+                    // successBox.style.display = 'block';
+                    
+                    // setTimeout(() => { window.location.href = 'index.html'; }, 1500);
+                }
+            } catch (err) {
+                errorBox.innerText = err.message === 'Invalid login credentials' ? '账号或密码错误' : err.message;
+                errorBox.style.display = 'block';
+            }
+        }
+    </script>
+</body>
+</html>

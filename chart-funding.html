@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>全球融资趋势 | LowAltitude Insight</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+</head>
+<body>
+    <header><div class="standard-container"><div class="nav-inner"><a href="index.html" class="logo">LowAltitude<span>Insight</span></a><a href="index.html">← 返回首页</a></div></div></header>
+    <section class="page-hero"><div class="standard-container"><h1>全球 eVTOL 融资趋势</h1><p>近五年资本市场流向与热度分析</p></div></section>
+
+    <div class="standard-container">
+        <div id="chart-container" style="width: 100%; height: 500px;"></div>
+    </div>
+
+    <!-- 弹窗结构 (同上) -->
+    <div class="modal-overlay" id="info-modal"><div class="modal-box"><div class="modal-close" onclick="closeModal()">×</div><div class="modal-title" id="m-title"></div><div class="modal-content" id="m-content"></div><div class="modal-meta" id="m-meta"></div></div></div>
+
+    <script>
+        var myChart = echarts.init(document.getElementById('chart-container'));
+
+        var option = {
+            tooltip: { trigger: 'axis' },
+            xAxis: { type: 'category', data: ['2020', '2021', '2022', '2023', '2024'] },
+            yAxis: { type: 'value', name: '融资额 (亿美元)' },
+            series: [{
+                data: [
+                    {value: 15, detail: '2020年：Joby 等头部企业通过 SPAC 上市引发热潮。'},
+                    {value: 48, detail: '2021年：行业爆发期，Archer、Lilium 相继上市。'},
+                    {value: 32, detail: '2022年：资本回归理性，关注适航取证进度。'},
+                    {value: 38, detail: '2023年：中国市场发力，小鹏汇天等获大额融资。'},
+                    {value: 42, detail: '2024年：商业化前夜，基础设施建设成为新热点。'}
+                ],
+                type: 'line',
+                smooth: true,
+                areaStyle: { opacity: 0.2 },
+                itemStyle: { color: '#3b82f6' },
+                lineStyle: { width: 4 }
+            }]
+        };
+
+        myChart.setOption(option);
+
+        // 点击显示详情
+        myChart.on('click', function (params) {
+            showModal(params.name + '年 融资分析', params.data.detail, '融资总额: $' + params.value + 'B');
+        });
+
+        function showModal(t, c, m) { document.getElementById('m-title').innerText=t; document.getElementById('m-content').innerText=c; document.getElementById('m-meta').innerText=m; document.getElementById('info-modal').style.display='flex'; }
+        function closeModal() { document.getElementById('info-modal').style.display='none'; }
+        window.addEventListener('resize', function() { myChart.resize(); });
+    </script>
+</body>
+</html>

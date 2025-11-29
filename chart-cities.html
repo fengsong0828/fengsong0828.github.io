@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>低空经济试点城市分布 | LowAltitude Insight</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+</head>
+<body>
+
+    <!-- Header -->
+    <header>
+        <div class="standard-container">
+            <div class="nav-inner">
+                <a href="index.html" class="logo">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+                    LowAltitude<span>Insight</span>
+                </a>
+                <a href="index.html" style="font-size:0.9rem; color:#64748b;">← 返回首页</a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Page Hero -->
+    <section class="page-hero">
+        <div class="standard-container">
+            <h1>全国低空经济试点城市分布图</h1>
+            <p>实时监控各省市低空空域开放与产业示范情况</p>
+        </div>
+    </section>
+
+    <!-- 地图容器 -->
+    <div class="standard-container">
+        <div id="map-container" style="width: 100%; height: 700px; margin-bottom: 60px;"></div>
+    </div>
+
+    <!-- 详情弹窗 -->
+    <div class="modal-overlay" id="info-modal">
+        <div class="modal-box">
+            <div class="modal-close" onclick="closeModal()">×</div>
+            <div class="modal-title" id="m-title"></div>
+            <div class="modal-content" id="m-content"></div>
+            <div class="modal-meta" id="m-meta"></div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer>
+        <div class="standard-container">
+            <div class="copyright">&copy; 2025 LowAltitude Insight.</div>
+        </div>
+    </footer>
+
+    <script>
+        var myChart = echarts.init(document.getElementById('map-container'));
+        myChart.showLoading({ color: '#3b82f6', maskColor: 'rgba(255, 255, 255, 0.8)' });
+
+        var cityData = [
+            { name: '深圳', value: [114.057868, 22.543099, 100], detail: '全球无人机之都，出台全国首部低空经济产业促进条例。', meta: '试点类型: 全域低空开放示范' },
+            { name: '广州', value: [113.264385, 23.129112, 90], detail: '亿航智能、小鹏汇天总部所在地。', meta: '试点类型: 城市空中交通(UAM)' },
+            { name: '合肥', value: [117.227239, 31.820586, 85], detail: '全空间无人体系建设示范城市。', meta: '试点类型: 场景应用示范' },
+            { name: '成都', value: [104.066541, 30.572269, 80], detail: '工业无人机重镇，获批国家级试验区。', meta: '试点类型: 工业级无人机' },
+            { name: '上海', value: [121.473701, 31.230416, 80], detail: '金山华东无人机基地。', meta: '试点类型: 航空制造与试飞' },
+            { name: '北京', value: [116.407526, 39.904030, 75], detail: '延庆区民用无人驾驶航空试验区。', meta: '试点类型: 监管创新示范' },
+            { name: '长沙', value: [112.938814, 28.228209, 70], detail: '全国首个全域低空空域管理改革试点省份核心城市。', meta: '试点类型: 空域管理改革' }
+        ];
+
+        fetch('https://geo.datav.aliyun.com/areas_v3/bound/100000_full.json')
+            .then(response => response.json())
+            .then(geoJson => {
+                myChart.hideLoading();
+                echarts.registerMap('china', geoJson);
+
+                var option = {
+                    backgroundColor: 'transparent', 
+                    tooltip: { trigger: 'item', formatter: '{b}' },
+                    geo: {
+                        map: 'china',
+                        roam: false, // ★★★ 禁止鼠标滚轮缩放和拖拽 ★★★
+                        
+                        // ★★★ 调整视野核心技巧 ★★★
+                        // center: [经度, 纬度]。105, 36 大概在兰州附近，作为中心点能很好地展示大陆
+                        center: [105, 36], 
+                        // zoom: 放大倍数。1.6 倍足够大，能把南海挤出画面
+                        zoom: 1.6,
+
+                        label: { emphasis: { show: false } },
+                        
+                        // ★★★ 核心样式修改：深填充，浅描边 ★★★
+                        itemStyle: {
+                            normal: {
+                                areaColor: '#2c4770', // 填充：深沉的科技蓝
+                                borderColor: '#7baaf7', // 边框：亮一点的蓝
+                                borderWidth: 1
+                            },
+                            emphasis: {
+                                areaColor: '#3b82f6', // 悬停时变亮
+                                borderColor: '#fff'
+                            }
+                        }
+                    },
+                    series: [
+                        {
+                            name: '试点城市',
+                            type: 'effectScatter',
+                            coordinateSystem: 'geo',
+                            data: cityData,
+                            symbolSize: function (val) { return val[2] / 5; },
+                            encode: { value: 2 },
+                            showEffectOn: 'render',
+                            rippleEffect: { brushType: 'stroke', scale: 3 },
+                            label: {
+                                formatter: '{b}', position: 'right', show: true,
+                                color: '#1e293b', // 城市文字用深色，在白底页面上看清楚
+                                fontSize: 12,
+                                fontWeight: 'bold',
+                                backgroundColor: 'rgba(255,255,255,0.7)', // 给文字加个淡淡的白底背景，防止撞色看不清
+                                padding: [2, 4],
+                                borderRadius: 3
+                            },
+                            itemStyle: {
+                                color: '#3b82f6', // 涟漪点颜色
+                                shadowBlur: 10,
+                                shadowColor: '#3b82f6'
+                            },
+                            zlevel: 1
+                        }
+                    ]
+                };
+                myChart.setOption(option);
+            })
+            .catch(error => {
+                console.error(error);
+                myChart.hideLoading();
+                document.getElementById('map-container').innerHTML = '加载失败';
+            });
+
+        myChart.on('click', function (params) {
+            if (params.seriesType === 'effectScatter') {
+                const data = params.data;
+                showModal(data.name + ' - 试点详情', data.detail, data.meta);
+            }
+        });
+
+        function showModal(t, c, m) { 
+            document.getElementById('m-title').innerText = t; 
+            document.getElementById('m-content').innerText = c; 
+            document.getElementById('m-meta').innerText = m; 
+            document.getElementById('info-modal').style.display = 'flex'; 
+        }
+        function closeModal() { document.getElementById('info-modal').style.display = 'none'; }
+        window.addEventListener('resize', function() { myChart.resize(); });
+    </script>
+</body>
+</html>

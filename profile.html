@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>个人中心 | LowAltitude Insight</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        /* 个人中心专用样式 */
+        .profile-container { max-width: 600px; margin: 40px auto; padding: 0 20px; }
+        .profile-card { background: white; padding: 40px; border-radius: 12px; box-shadow: var(--card-shadow); border: 1px solid var(--border-color); }
+        .profile-header { text-align: center; margin-bottom: 30px; border-bottom: 1px solid #f1f5f9; padding-bottom: 20px; }
+        .avatar { width: 80px; height: 80px; background: var(--primary-dark); color: white; font-size: 2rem; font-weight: bold; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 15px; }
+        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .form-group { margin-bottom: 20px; }
+        .form-group.full { grid-column: span 2; }
+        label { display: block; margin-bottom: 8px; font-size: 0.9rem; font-weight: 600; color: #334155; }
+        input { width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 1rem; }
+        input:disabled { background: #f1f5f9; color: #94a3b8; cursor: not-allowed; }
+        
+        .btn-save { width: 100%; padding: 12px; background: var(--primary-blue); color: white; border: none; border-radius: 6px; font-size: 1rem; font-weight: 600; cursor: pointer; }
+        .btn-save:hover { background: #2563eb; }
+        .btn-logout { display: block; margin: 20px auto 0; background: none; border: none; color: #ef4444; cursor: pointer; font-size: 0.9rem; }
+        .btn-logout:hover { text-decoration: underline; }
+        
+        #msg-box { text-align: center; margin-top: 15px; font-size: 0.9rem; display: none; }
+    </style>
+</head>
+<body>
+
+    <!-- 简化的 Header，只有回首页 -->
+    <header>
+        <div class="standard-container">
+            <div class="nav-inner">
+                <a href="index.html" class="logo">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+                    LowAltitude<span>Insight</span>
+                </a>
+                <a href="index.html" style="font-size:0.9rem; color:#64748b;">← 返回首页</a>
+            </div>
+        </div>
+    </header>
+
+    <div class="profile-container">
+        <div class="profile-card">
+            <div class="profile-header">
+                <div class="avatar" id="avatar-text">U</div>
+                <h2 id="display-email">加载中...</h2>
+                <p style="color:#64748b; font-size:0.9rem;">普通会员</p>
+            </div>
+
+            <div class="form-grid">
+                <div class="form-group full">
+                    <label>邮箱 (不可修改)</label>
+                    <input type="text" id="email" disabled>
+                </div>
+                <div class="form-group">
+                    <label>昵称 / 姓名</label>
+                    <input type="text" id="username" placeholder="怎么称呼您？">
+                </div>
+                <div class="form-group">
+                    <label>手机号</label>
+                    <input type="text" id="phone" placeholder="联系方式">
+                </div>
+                <div class="form-group">
+                    <label>所在公司</label>
+                    <input type="text" id="company" placeholder="例如：亿航智能">
+                </div>
+                <div class="form-group">
+                    <label>职位 / 头衔</label>
+                    <input type="text" id="role" placeholder="例如：研发工程师">
+                </div>
+            </div>
+
+            <button class="btn-save" onclick="updateProfile()">保存修改</button>
+            <div id="msg-box"></div>
+            
+            <!-- 新增：管理员入口 (默认隐藏) -->
+            <div id="admin-entry" style="display: none; text-align: center; margin-top: 20px; padding-top: 20px; border-top: 1px dashed #e2e8f0;">
+                <p style="font-size: 0.85rem; color: #64748b; margin-bottom: 10px;">管理员权限已激活</p>
+                <a href="admin.html" style="display: block; width: 100%; padding: 12px; background: #0f172a; color: white; border-radius: 6px; font-weight: 600; text-decoration: none;">
+                    进入后台管理系统
+                </a>
+            </div>
+
+            <!-- 原有的退出按钮 -->
+            <button class="btn-logout" onclick="logout()">退出登录</button>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+        // ================= 配置区域 =================
+        // 1. 替换为你的 Project URL
+        const supabaseUrl = 'https://cpvisbzlzatfdqakqsul.supabase.co'; 
+        // 2. 替换为你的 anon key (public)
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNwdmlzYnpsemF0ZmRxYWtxc3VsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQzOTgwMTYsImV4cCI6MjA3OTk3NDAxNn0.R__eoUjpzFP9_SUxIVnM9T1zpl1pcBTGMzxXLf-Orcg';
+                
+        // ★★★ 修正点：变量名改为 _supabase，避免冲突 ★★★
+        const _supabase = supabase.createClient(supabaseUrl, supabaseKey);
+        // ===========================================
+
+        let currentUserId = null;
+
+        document.addEventListener('DOMContentLoaded', async function() {
+            // 1. 检查登录状态 (使用 _supabase)
+            const { data: { session } } = await _supabase.auth.getSession();
+            
+            if (!session) {
+                // 没登录？踢回登录页
+                window.location.href = 'login.html';
+                return;
+            }
+
+            currentUserId = session.user.id;
+            const email = session.user.email;
+            
+            // 填充基本信息
+            document.getElementById('email').value = email;
+            document.getElementById('display-email').innerText = email;
+            document.getElementById('avatar-text').innerText = email.charAt(0).toUpperCase();
+
+            // 2. 从 profiles 表读取详细资料
+            fetchProfile();
+        });
+
+        async function fetchProfile() {
+            // (使用 _supabase)
+            const { data, error } = await _supabase
+                .from('profiles')
+                .select('*')
+                .eq('id', currentUserId)
+                .single(); // 只取一条
+
+            if (data) {
+                document.getElementById('username').value = data.username || '';
+                document.getElementById('phone').value = data.phone || '';
+                document.getElementById('company').value = data.company || '';
+                document.getElementById('role').value = data.role || '';
+
+                // ★★★ 新增：判断是否为管理员 ★★★
+                if (data.is_admin === true) {
+                    // 如果是管理员，显示入口按钮
+                    document.getElementById('admin-entry').style.display = 'block';
+                    // 给头像加个金边，以此示众（可选）
+                    document.querySelector('.avatar').style.border = '3px solid #f59e0b';
+                }
+            }
+        }
+
+        async function updateProfile() {
+            const btn = document.querySelector('.btn-save');
+            const msg = document.getElementById('msg-box');
+            
+            btn.innerText = '保存中...';
+            btn.disabled = true;
+            msg.style.display = 'none';
+
+            // 收集表单数据
+            const updates = {
+                username: document.getElementById('username').value,
+                phone: document.getElementById('phone').value,
+                company: document.getElementById('company').value,
+                role: document.getElementById('role').value,
+                created_at: new Date()
+            };
+
+            // 更新数据库 (使用 _supabase)
+            const { error } = await _supabase
+                .from('profiles')
+                .update(updates)
+                .eq('id', currentUserId);
+
+            btn.innerText = '保存修改';
+            btn.disabled = false;
+            msg.style.display = 'block';
+
+            if (error) {
+                console.error(error);
+                msg.style.color = 'red';
+                msg.innerText = '保存失败: ' + error.message;
+            } else {
+                msg.style.color = 'green';
+                msg.innerText = '保存成功！';
+            }
+        }
+
+        async function logout() {
+            // (使用 _supabase)
+            await _supabase.auth.signOut();
+            window.location.href = 'index.html';
+        }
+    </script>
+</body>
+</html>

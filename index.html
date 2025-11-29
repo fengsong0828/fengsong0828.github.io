@@ -4,32 +4,41 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>LowAltitude Insight | 低空经济洞察</title>
-    <!-- 核心修改：引入外部样式表 -->
-    <link rel="stylesheet" href="style.css"> 
+    <!-- 引入外部样式表 -->
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-    <!-- 1. 导航栏 -->
+    <!-- 1. 导航栏 Header -->
     <header>
         <div class="standard-container">
             <div class="nav-inner">
+                <!-- Logo：点击回首页 -->
                 <a href="index.html" class="logo">
-                    <!-- SVG Logo 图标 -->
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
                     LowAltitude<span>Insight</span>
                 </a>
+                
+                <!-- 手机端菜单按钮 -->
+                <button class="mobile-menu-btn" onclick="toggleMenu()">☰</button>
+
+                <!-- 导航链接 -->
                 <nav class="nav-links" id="navMenu">
-                    <a href="index.html" class="active">首页</a> <!-- 加上 active 类表示当前页 -->
+                    <a href="index.html" class="active">首页</a>
                     <a href="news.html">资讯快报</a>
                     <a href="policies.html">政策法规</a>
                     <a href="tech.html">技术前沿</a>
                     <a href="companies.html">公司数据库</a>
                 </nav>
-                <div class="header-btns">
+
+                <!-- 功能按钮 -->
+                <div class="header-actions">
                     <button class="btn btn-outline">搜索</button>
-                    <button class="btn btn-primary">订阅/登录</button>
+                    <!-- 登录按钮 -->
+                    <button class="btn btn-primary" id="auth-btn">订阅/登录</button>
                 </div>
             </div>
+
         </div>
     </header>
 
@@ -42,268 +51,205 @@
         </div>
     </section>
 
-    <!-- 3. 核心数据仪表盘 (浮动层) -->
+    <!-- 3. 核心数据仪表盘 (带动画) -->
     <div class="standard-container">
         <div class="dashboard-grid">
-            <div class="data-card">
+            <!-- 卡片 1: 跳转融资图表页 -->
+            <a href="chart-funding.html" class="data-card" style="text-decoration: none; color: inherit;">
                 <div class="data-label">全球融资总额</div>
-                <div class="data-value" id="val-funding">$4.2B</div>
+                <div class="data-value">$4.2B</div>
                 <span class="trend-indicator">▲ 12% 同比增长</span>
-            </div>
-            <div class="data-card">
+            </a>
+            <!-- 卡片 2: 跳转城市图表页 -->
+            <a href="chart-cities.html" class="data-card" style="text-decoration: none; color: inherit;">
                 <div class="data-label">试点城市</div>
-                <div class="data-value" id="val-cities">26</div>
+                <div class="data-value">26</div>
                 <span class="trend-indicator">▲ 新增 3 个</span>
-            </div>
-            <div class="data-card">
+            </a>
+            <!-- 卡片 3: 跳转专利图表页 -->
+            <a href="chart-patents.html" class="data-card" style="text-decoration: none; color: inherit;">
                 <div class="data-label">本周新增专利</div>
-                <div class="data-value" id="val-patents">142</div>
+                <div class="data-value">142</div>
                 <span class="trend-indicator">主要领域: 电池/飞控</span>
-            </div>
-            <div class="data-card">
+            </a>
+            <!-- 卡片 4: 跳转企业图谱页 -->
+            <a href="chart-companies.html" class="data-card" style="text-decoration: none; color: inherit;">
                 <div class="data-label">已收录企业</div>
                 <div class="data-value">850+</div>
                 <span class="trend-indicator">查看全景图谱 →</span>
-            </div>
+            </a>
         </div>
     </div>
 
-    <!-- 4. 主内容区域 (Grid 布局) -->
+    <!-- 4. 主内容区域 -->
     <div class="standard-container">
         <div class="main-layout-grid">
-            
-            <!-- 左侧：动态流 -->
+            <!-- 左侧：最新动态 -->
             <main class="content-left">
                 <div class="section-header">
                     <div class="section-title">最新动态</div>
                     <a href="news.html" class="section-link">查看更多 ></a>
                 </div>
 
-                <div class="news-tabs">
-                    <span class="tab active">全部</span>
-                    <span class="tab">政策解读</span>
-                    <span class="tab">eVTOL</span>
-                    <span class="tab">资本动态</span>
-                </div>
-
-                <div class="news-feed">
-                    <!-- 新闻 1 -->
-                    <article class="news-item">
-                        <div class="news-image" style="background: #cbd5e1 url('https://via.placeholder.com/320x200?text=Policy') center/cover;"></div>
-                        <div class="news-content">
-                            <h3>民航局发布《民用无人驾驶航空器运行安全管理规则》解读</h3>
-                            <div class="news-meta">
-                                <span class="tag">政策法规</span>
-                                <span>2小时前</span>
-                            </div>
-                            <p style="color: #64748b; font-size: 0.9rem; margin-top: 8px;">
-                                新规明确了轻型、小型无人机的飞行空域限制，为城市物流配送扫清了部分法律障碍...
-                            </p>
-                        </div>
-                    </article>
-
-                    <!-- 新闻 2 -->
-                    <article class="news-item">
-                        <div class="news-image" style="background: #cbd5e1 url('https://via.placeholder.com/320x200?text=Investment') center/cover;"></div>
-                        <div class="news-content">
-                            <h3>某头部eVTOL企业完成B轮融资，红杉资本领投</h3>
-                            <div class="news-meta">
-                                <span class="tag">资本动态</span>
-                                <span>5小时前</span>
-                            </div>
-                            <p style="color: #64748b; font-size: 0.9rem; margin-top: 8px;">
-                                本轮融资将主要用于适航取证及大湾区示范航线的建设，标志着商业化落地加速...
-                            </p>
-                        </div>
-                    </article>
-
-                    <!-- 新闻 3 -->
-                    <article class="news-item">
-                        <div class="news-image" style="background: #cbd5e1 url('https://via.placeholder.com/320x200?text=Tech') center/cover;"></div>
-                        <div class="news-content">
-                            <h3>固态电池技术新突破：能量密度提升至 500Wh/kg</h3>
-                            <div class="news-meta">
-                                <span class="tag">技术前沿</span>
-                                <span>昨天</span>
-                            </div>
-                            <p style="color: #64748b; font-size: 0.9rem; margin-top: 8px;">
-                                这将使电动飞机的续航里程增加约40%，彻底改变短途城际空中交通的经济模型...
-                            </p>
-                        </div>
-                    </article>
+                <!-- 动态新闻容器 -->
+                <div class="news-feed" id="home-news-container">
+                    <p style="text-align:center; color:#999; padding:20px;">正在加载最新资讯...</p>
                 </div>
             </main>
 
             <!-- 右侧：侧边栏 -->
             <aside class="sidebar">
-                <!-- 订阅模块 -->
+                <!-- 订阅框 -->
                 <div class="sidebar-widget newsletter-box">
-                    <div class="widget-title" style="justify-content:center; color:var(--primary-blue);">订阅行业日报</div>
-                    <p style="font-size: 0.85rem; color: #64748b; margin-bottom: 10px;">每早8点，获取低空经济核心情报。</p>
-                    <input type="email" class="newsletter-input" placeholder="输入您的邮箱地址">
+                    <div style="font-weight:700; color:var(--primary-blue); text-align:center;">订阅行业日报</div>
+                    <p style="font-size:0.85rem; color:#64748b; margin-bottom:10px; text-align:center;">每早8点，获取低空经济核心情报。</p>
+                    <input type="email" class="newsletter-input" placeholder="输入邮箱地址">
                     <button class="btn btn-primary" style="width: 100%;">免费订阅</button>
                 </div>
 
-                <!-- 政策模块 -->
+                <!-- 政策法规更新 (容器) -->
                 <div class="sidebar-widget">
                     <div class="widget-title">政策法规更新</div>
-                    <ul class="policy-list">
-                        <li>
-                            <a href="#">深圳经济特区低空经济产业促进条例</a>
-                            <span class="policy-region">中国·深圳</span>
-                        </li>
-                        <li>
-                            <a href="#">EASA 发布垂直起降航空器专用条件</a>
-                            <span class="policy-region">欧盟</span>
-                        </li>
-                        <li>
-                            <a href="#">FAA 针对空中出租车的拟议规则</a>
-                            <span class="policy-region">美国</span>
-                        </li>
+                    <ul class="policy-list" id="home-policy-list">
+                        <!-- JS 会自动填充这里，保持结构：标题 + 标签 -->
+                        <li style="color:#999; font-size:0.85rem;">加载中...</li>
                     </ul>
                 </div>
 
-                <!-- 专家观点 -->
+                <!-- 专家观点 (静态展示 - 复刻截图) -->
                 <div class="sidebar-widget">
                     <div class="widget-title">专家观点</div>
-                    <div style="display: flex; gap: 12px; align-items: center; margin-bottom: 12px;">
-                        <div style="width: 40px; height: 40px; background: #ccc; border-radius: 50%;"></div>
-                        <div>
-                            <div style="font-weight: 700; font-size: 0.9rem;">FengSong 博士</div>
-                            <div style="font-size: 0.75rem; color: #64748b;">低空经济专家</div>
+                    
+                    <!-- 人物信息区 -->
+                    <div class="expert-profile">
+                        <div class="expert-avatar"></div> <!-- 灰色圆圈 -->
+                        <div class="expert-info">
+                            <div class="expert-name">FengSong 博士</div>
+                            <div class="expert-role">低空经济专家</div>
                         </div>
                     </div>
-                    <p style="font-size: 0.85rem; font-style: italic; color: #475569;">"2025年将是eVTOL适航取证的关键年份，但基础设施建设仍是短板..."</p>
+                    
+                    <!-- 观点引用区 -->
+                    <p class="expert-quote">
+                        "2025年将是eVTOL适航取证的关键年份，但基础设施建设仍是短板..."
+                    </p>
                 </div>
             </aside>
         </div>
     </div>
 
-    <!-- 5. 公司数据库 (与上方内容严格对齐) -->
+    <!-- 5. 公司数据库预览 -->
     <div class="standard-container">
-        <div class="company-section">
+        <div class="company-section" style="margin-bottom: 60px;">
             <div class="section-header">
                 <div class="section-title">行业图谱 & 公司库</div>
-                <a href="companies.html" class="section-link">浏览全部 850+ 家企业 ></a>
+                <a href="companies.html" class="section-link">浏览全部 ></a>
             </div>
             
-            <div class="company-grid">
-                <!-- 公司卡片 1 -->
-                <div class="company-card">
-                    <div class="company-header">
-                        <div class="company-logo-box">EH</div>
-                        <div class="company-info">
-                            <div class="name">亿航智能</div>
-                            <div class="loc">中国 · 广州</div>
-                        </div>
-                    </div>
-                    <p class="company-desc">全球领先的自动驾驶飞行器科技企业，EH216-S 已获得全球首张无人驾驶 eVTOL 型号合格证。</p>
-                    <div class="company-tags">
-                        <span class="company-tag highlight">已上市</span>
-                        <span class="company-tag">自动驾驶</span>
-                        <span class="company-tag">TC取证</span>
-                    </div>
-                </div>
-
-                <!-- 公司卡片 2 -->
-                <div class="company-card">
-                    <div class="company-header">
-                        <div class="company-logo-box">JO</div>
-                        <div class="company-info">
-                            <div class="name">Joby Aviation</div>
-                            <div class="loc">美国 · 加州</div>
-                        </div>
-                    </div>
-                    <p class="company-desc">开发全电动垂直起降飞机，与达美航空深度合作，旨在打造快速、安静的空中出租车服务网络。</p>
-                    <div class="company-tags">
-                        <span class="company-tag highlight">已上市</span>
-                        <span class="company-tag">倾转旋翼</span>
-                        <span class="company-tag">美军合作</span>
-                    </div>
-                </div>
-
-                <!-- 公司卡片 3 -->
-                <div class="company-card">
-                    <div class="company-header">
-                        <div class="company-logo-box">XP</div>
-                        <div class="company-info">
-                            <div class="name">小鹏汇天</div>
-                            <div class="loc">中国 · 广州</div>
-                        </div>
-                    </div>
-                    <p class="company-desc">亚洲规模最大的飞行汽车公司，最新发布的“陆地航母”分体式飞行汽车开启了量产先河。</p>
-                    <div class="company-tags">
-                        <span class="company-tag">独角兽</span>
-                        <span class="company-tag">陆空两栖</span>
-                        <span class="company-tag">分体式</span>
-                    </div>
-                </div>
-
-                 <!-- 公司卡片 4 -->
-                 <div class="company-card">
-                    <div class="company-header">
-                        <div class="company-logo-box">DJ</div>
-                        <div class="company-info">
-                            <div class="name">大疆创新</div>
-                            <div class="loc">中国 · 深圳</div>
-                        </div>
-                    </div>
-                    <p class="company-desc">全球民用无人机霸主，发布 DJI FlyCart 30 进军低空运载领域，重新定义短途物资运输。</p>
-                    <div class="company-tags">
-                        <span class="company-tag">独角兽</span>
-                        <span class="company-tag">物流运输</span>
-                        <span class="company-tag">消费级</span>
-                    </div>
-                </div>
+            <!-- 动态公司容器 -->
+            <div class="company-grid" id="home-company-container">
+                <p style="text-align:center; color:#999;">正在加载公司数据...</p>
             </div>
         </div>
     </div>
 
-    <!-- 6. 页脚 -->
+     <!-- 6. Footer (丰满版) -->
     <footer>
         <div class="standard-container">
             <div class="footer-grid">
-                <div class="footer-col">
-                    <h4 style="font-size: 1.5rem; margin-bottom: 15px;">LowAltitude Insight</h4>
-                    <p style="font-size: 0.9rem; line-height: 1.6;">致力于成为低空经济领域最专业的信息服务平台与连接器，连接政策、资本与技术。</p>
+                <!-- 第1列：品牌与简介 -->
+                <div class="footer-col brand-col">
+                    <h4 style="color:white; margin-bottom:15px; font-size:1.2rem;">LowAltitude Insight</h4>
+                    <p style="font-size:0.9rem; color:#94a3b8; line-height: 1.6; margin-bottom: 20px;">
+                        连接政策、资本与技术，打造低空经济领域的数字化基础设施与决策引擎。
+                    </p>
+                    <!-- 社交图标 -->
+                    <div style="display:flex; gap:15px;">
+                        <a href="#" style="width:32px; height:32px; background:#334155; border-radius:50%; display:flex; align-items:center; justify-content:center; color:white;">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+                        </a>
+                        <a href="#" style="width:32px; height:32px; background:#334155; border-radius:50%; display:flex; align-items:center; justify-content:center; color:white;">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 3a10.9 10.9 0 0 1-3.14 1.53 4.48 4.48 0 0 0-7.86 3v1A10.66 10.66 0 0 1 3 4s-4 9 5 13a11.64 11.64 0 0 1-7 2c9 5 20 0 20-11.5a4.5 4.5 0 0 0-.08-.83A7.72 7.72 0 0 0 23 3z"></path></svg>
+                        </a>
+                        <a href="mailto:contact@example.com" style="width:32px; height:32px; background:#334155; border-radius:50%; display:flex; align-items:center; justify-content:center; color:white;">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
+                        </a>
+                    </div>
                 </div>
+
+                <!-- 第2列：核心板块 (精选3个) -->
                 <div class="footer-col">
-                    <h4>核心板块</h4>
-                    <ul>
-                        <li><a href="news.html">资讯快报</a></li>
-                        <li><a href="policies.html">政策数据库</a></li>
-                        <li><a href="tech.html">技术前沿</a></li>
-                        <li><a href="#">深度研报</a></li>
+                    <h4 style="color:white; margin-bottom:20px;">核心板块</h4>
+                    <ul style="font-size:0.9rem; color:#94a3b8;">
+                        <li style="margin-bottom:10px;"><a href="news.html" style="color:#94a3b8;">资讯快报</a></li>
+                        <li style="margin-bottom:10px;"><a href="policies.html" style="color:#94a3b8;">政策法规</a></li>
+                        <li style="margin-bottom:10px;"><a href="companies.html" style="color:#94a3b8;">企业数据库</a></li>
                     </ul>
                 </div>
+
+                <!-- 第3列：数据图谱 (精选3个) -->
                 <div class="footer-col">
-                    <h4>关于我们</h4>
-                    <ul>
-                        <li><a href="#">愿景与使命</a></li>
-                        <li><a href="#">创始人简介</a></li>
-                        <li><a href="#">加入我们</a></li>
-                        <li><a href="#">联系方式</a></li>
+                    <h4 style="color:white; margin-bottom:20px;">数据图谱</h4>
+                    <ul style="font-size:0.9rem; color:#94a3b8;">
+                        <li style="margin-bottom:10px;"><a href="chart-funding.html" style="color:#94a3b8;">全球融资趋势</a></li>
+                        <li style="margin-bottom:10px;"><a href="chart-cities.html" style="color:#94a3b8;">试点城市分布</a></li>
+                        <li style="margin-bottom:10px;"><a href="chart-companies.html" style="color:#94a3b8;">产业链全景图</a></li>
                     </ul>
                 </div>
+
+                <!-- 第4列：关于我们 (去掉后台入口) -->
                 <div class="footer-col">
-                    <h4>资源</h4>
-                    <ul>
-                        <li><a href="#">活动日历</a></li>
-                        <li><a href="#">问答社区</a></li>
-                        <li><a href="#">寻求报道</a></li>
+                    <h4 style="color:white; margin-bottom:20px;">关于</h4>
+                    <ul style="font-size:0.9rem; color:#94a3b8;">
+                        <li style="margin-bottom:10px;"><a href="#" style="color:#94a3b8;">团队愿景</a></li>
+                        <li style="margin-bottom:10px;"><a href="#" style="color:#94a3b8;">寻求报道</a></li>
+                        <li style="margin-bottom:10px;"><a href="#" style="color:#94a3b8;">商务合作</a></li>
                     </ul>
                 </div>
             </div>
-            <div class="copyright">
-                &copy; 2025 LowAltitude Insight. All rights reserved.
+
+            <div class="copyright" style="border-top:1px solid #334155; padding-top:20px; margin-top:40px; text-align:center; color:#64748b; font-size:0.85rem;">
+                &copy; 2025 LowAltitude Insight. All rights reserved. 京ICP备XXXXXXXX号
             </div>
         </div>
     </footer>
 
-    <!-- 7. 简单的交互脚本 -->
+    <!-- 7. JavaScript 逻辑 -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
-        // 简单的淡入动画效果
-        document.addEventListener('DOMContentLoaded', () => {
+        // ================= 配置区域 =================
+        // ★★★ 请务必替换为你自己的 Supabase URL 和 Key ★★★
+        // 1. 替换为你的 Project URL
+        const supabaseUrl = 'https://cpvisbzlzatfdqakqsul.supabase.co'; 
+        // 2. 替换为你的 anon key (public)
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNwdmlzYnpsemF0ZmRxYWtxc3VsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQzOTgwMTYsImV4cCI6MjA3OTk3NDAxNn0.R__eoUjpzFP9_SUxIVnM9T1zpl1pcBTGMzxXLf-Orcg';
+        // 初始化客户端
+        
+        // 使用 _supabase 避免变量冲突
+        const _supabase = supabase.createClient(supabaseUrl, supabaseKey);
+        // ===========================================
+
+        // 手机菜单切换
+        function toggleMenu() { 
+            document.getElementById('navMenu').classList.toggle('active'); 
+        }
+
+        // 页面主逻辑
+        document.addEventListener('DOMContentLoaded', async function() {
+            
+            // 1. 检查用户登录状态
+            checkUserLogin();
+
+            // 2. 加载首页新闻 (Top 3)
+            loadHomeNews();
+
+            // 3. 加载侧边栏政策 (Top 5)
+            loadHomePolicies();
+
+            // 4. 加载首页公司 (Top 4)
+            loadHomeCompanies();
+
+            // 5. 数据卡片动画 (保留原功能)
             const cards = document.querySelectorAll('.data-card');
             cards.forEach((card, index) => {
                 card.style.opacity = '0';
@@ -315,6 +261,140 @@
                 }, 100 * index);
             });
         });
+
+        // --- 业务函数定义 ---
+
+        // A. 加载新闻
+        async function loadHomeNews() {
+            const { data: newsData } = await _supabase
+                .from('news')
+                .select('*')
+                .order('publish_date', { ascending: false })
+                .limit(6);
+
+            const newsContainer = document.getElementById('home-news-container');
+            if (newsData && newsData.length > 0) {
+                newsContainer.innerHTML = '';
+                newsData.forEach(item => {
+                    const bgStyle = item.image_url 
+                        ? `background: #cbd5e1 url('${item.image_url}') center/cover;` 
+                        : `background: #cbd5e1;`;
+
+                    newsContainer.innerHTML += `
+                        <article class="news-item">
+                            <div class="news-image" style="${bgStyle}"></div>
+                            <div class="news-content">
+                                <h3><a href="news.html">${item.title}</a></h3>
+                                <div class="news-meta">
+                                    <span class="tag">${item.category}</span>
+                                    <span>${item.publish_date}</span>
+                                </div>
+                                <p style="font-size:0.9rem; color:#64748b; margin-top:8px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">${item.summary}</p>
+                            </div>
+                        </article>
+                    `;
+                });
+            } else {
+                newsContainer.innerHTML = '<p style="text-align:center; padding:20px;">暂无新闻</p>';
+            }
+        }
+
+        // B. 加载政策 (侧边栏)
+        async function loadHomePolicies() {
+            const container = document.getElementById('home-policy-list');
+            
+            // 1. 查询时多取两个字段：department, publish_date
+            const { data } = await _supabase
+                .from('policies')
+                .select('title, file_url, region_type, department, publish_date') 
+                .order('publish_date', { ascending: false })
+                .limit(5);
+
+            if (data && data.length > 0) {
+                container.innerHTML = '';
+                data.forEach(item => {
+                    // 2. 处理数据显示
+                    const region = item.region_type || '政策'; // 例如：国内
+                    const dept = item.department || '';        // 例如：工信部
+                    // 日期格式化：只取 2025-01-15 这种格式，如果数据库是 date 类型直接用即可
+                    const date = item.publish_date || '';      
+
+                    // 3. 生成 HTML
+                    // 使用 flex 布局让标签、部门、日期在一行显示
+                    container.innerHTML += `
+                        <li>
+                            <a href="${item.file_url || '#'}" target="_blank">${item.title}</a>
+                            <div style="display:flex; align-items:center; gap:8px; margin-top:4px;">
+                                <span class="policy-region">${region}</span>
+                                <span style="font-size:0.75rem; color:#64748b;">${dept}</span>
+                                <span style="font-size:0.75rem; color:#94a3b8; margin-left:auto;">${date}</span>
+                            </div>
+                        </li>
+                    `;
+                });
+            } else {
+                container.innerHTML = '<li style="font-size:0.85rem; color:#999; padding:10px 0;">暂无更新</li>';
+            }
+        }
+
+        // C. 加载公司
+        async function loadHomeCompanies() {
+            const { data: companyData } = await _supabase
+                .from('companies')
+                .select('*')
+                .limit(4);
+            
+            const companyContainer = document.getElementById('home-company-container');
+            if (companyData && companyData.length > 0) {
+                companyContainer.innerHTML = '';
+                companyData.forEach(item => {
+                    let tagsHtml = '';
+                    if (item.tags && Array.isArray(item.tags)) {
+                        item.tags.slice(0, 2).forEach(tag => {
+                            const activeClass = (tag === '已上市' || tag === '独角兽') ? 'highlight' : '';
+                            tagsHtml += `<span class="company-tag ${activeClass}">${tag}</span>`;
+                        });
+                    }
+                    companyContainer.innerHTML += `
+                        <div class="company-card">
+                            <div class="company-header">
+                                <div class="company-logo-box">${item.logo_text || item.name.substring(0,2)}</div>
+                                <div>
+                                    <div style="font-weight:700;">${item.name}</div>
+                                    <div style="font-size:0.75rem; color:#94a3b8;">${item.location}</div>
+                                </div>
+                            </div>
+                            <p class="company-desc">${item.description}</p>
+                            <div class="company-tags">${tagsHtml}</div>
+                        </div>
+                    `;
+                });
+            } else {
+                companyContainer.innerHTML = '<p style="text-align:center; padding:20px;">暂无数据</p>';
+            }
+        }
+
+        // D. 检查登录状态
+        async function checkUserLogin() {
+            const { data: { session } } = await _supabase.auth.getSession();
+            const btn = document.getElementById('auth-btn');
+            
+            if (!btn) return;
+
+            if (session) {
+                const emailName = session.user.email.split('@')[0];
+                btn.innerText = emailName;
+                btn.style.backgroundColor = '#475569';
+                btn.onclick = function() {
+                    window.location.href = 'profile.html';
+                };
+            } else {
+                btn.innerText = '订阅/登录';
+                btn.onclick = function() {
+                    window.location.href = 'login.html';
+                };
+            }
+        }
     </script>
 </body>
 </html>
