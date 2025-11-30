@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>新闻详情 | LowAltitude Insight</title>
+    <title>政策详情 | LowAltitude Insight</title>
     <link rel="stylesheet" href="style.css">
     <style>
         /* 全局背景 */
@@ -13,7 +13,7 @@
         .back-btn { display: inline-flex; align-items: center; gap: 6px; color: #64748b; text-decoration: none; font-size: 0.95rem; }
         .back-btn:hover { color: #3b82f6; }
 
-        /* 卡片容器 */
+        /* 卡片容器：强制由内容撑开高度 */
         .article-card {
             background: #fff; 
             border-radius: 12px; 
@@ -22,88 +22,103 @@
             max-width: 960px; 
             margin: 0 auto;
             
-            /* ★关键：垂直 Flex 布局 */
+            /* ★关键：确保卡片也是个垂直容器 */
             display: flex;
             flex-direction: column;
             height: auto !important;
         }
 
-        /* === 头部布局 (Header) === */
+        /* === 头部布局 === */
         .article-header {
+            /* ★关键：强制重置定位，防止 style.css 干扰 */
             position: relative !important; 
+            
+            /* ★关键：强制高度自动，有多少内容就撑多高 */
             height: auto !important; 
+            min-height: auto !important;
             
             display: flex;
             flex-direction: column; 
             
-            /* 左右 50px，上 80px，下 0 */
+            /* 左右 50px，上 80px */
             padding: 80px 50px 0 50px; 
             
             width: 100%;
             box-sizing: border-box;
+            
+            /* 这一行确保它不会浮动 */
+            flex: 0 0 auto;
         }
 
-        /* 1. 左上角：类别标签 */
+        /* 1. 左上角：显示级别 */
         .category-badge {
             position: absolute; top: 24px; left: 24px;
-            background-color: #eff6ff; color: #3b82f6; 
+            background-color: #e0f2fe; color: #0284c7;
             padding: 5px 12px; border-radius: 6px;
             font-size: 0.85rem; font-weight: 600; letter-spacing: 0.5px; 
             z-index: 10;
         }
 
-        /* 2. 中间：新闻标题 */
+        /* 2. 中间：政策标题 */
         .article-title {
             width: 100%;
             font-size: 2rem; 
             font-weight: 800; 
             color: #0f172a; 
             line-height: 1.3; 
-            text-align: center; 
-            
-            /* 标题和下方横线的距离 */
-            margin: 0 0 30px 0; 
+            text-align: center;
+            margin: 0 0 30px 0; /* 这里的 30px 是标题和横线的距离 */
+            position: static !important; /* 防止被设为绝对定位 */
         }
 
-        /* 3. 底部：日期和来源 */
+        /* 3. 底部：发布日期(左) 和 发文部门(右) */
         .meta-row {
             display: flex; 
             width: 100%; 
             justify-content: space-between; 
             align-items: center;
-            
-            border-top: 1px solid #f1f5f9; /* 分割线 */
-            
-            padding-top: 20px; 
-            padding-bottom: 20px; 
-            
+            border-top: 1px solid #f1f5f9; 
+            padding-top: 15px; 
+            padding-bottom: 15px; /* 这一行的下留白 */
             color: #64748b; 
             font-size: 0.9rem;
-            padding-left: 0; padding-right: 0; 
         }
 
-        /* === 正文区域 (Body) === */
+        /* 正文区域 */
         .article-body {
-            /* 左右 50px，严格对齐 Header */
+            /* 左右保持 50px，和 Header 对齐 */
             padding: 0 50px 50px 50px; 
             
-            /* ★关键：控制正文离上面那根线的距离 */
+            /* ★关键修复：现在改为 40px 即可 */
+            /* 因为 Header 是 relative，Body 会自动排在它下面，不需要 200px */
             margin-top: 40px !important; 
             
-            position: static !important;
+            position: static !important; /* 确保正文没有乱跑 */
             
             font-size: 1.1rem; 
             line-height: 1.8; 
             color: #334155; 
             text-align: justify;
+            flex: 1 1 auto;
         }
         .article-body p { margin-bottom: 20px; }
 
-        /* 手机适配 */
+        /* 下载按钮区域 */
+        .download-section {
+            padding: 0 50px 50px 50px;
+            text-align: center;
+        }
+        .download-btn {
+            display: inline-flex; align-items: center; gap: 8px;
+            background-color: #f1f5f9; color: #334155;
+            padding: 12px 24px; border-radius: 8px; text-decoration: none;
+            font-weight: 600; transition: all 0.2s;
+        }
+        .download-btn:hover { background-color: #e2e8f0; color: #0f172a; }
+
         @media (max-width: 768px) {
             .article-header { padding: 80px 20px 0 20px; }
             .article-body { padding: 0 20px 40px 20px; margin-top: 20px !important; }
-            .article-title { font-size: 1.6rem; }
             .meta-row { flex-direction: column; gap: 10px; align-items: center; }
         }
     </style>
@@ -118,8 +133,8 @@
                 <button class="mobile-menu-btn" onclick="toggleMenu()">☰</button>
                 <nav class="nav-links" id="navMenu">
                     <a href="index.html">首页</a>
-                    <a href="news.html" class="active">资讯快报</a>
-                    <a href="policies.html">政策法规</a>
+                    <a href="news.html">资讯快报</a>
+                    <a href="policies.html" class="active">政策法规</a> <!-- 激活状态 -->
                     <a href="tech.html">技术前沿</a>
                     <a href="companies.html">公司数据库</a>
                 </nav>
@@ -130,11 +145,11 @@
 
     <div class="standard-container page-spacing">
         <div class="back-nav">
-            <a href="news.html" class="back-btn">← 返回资讯列表</a>
+            <a href="policies.html" class="back-btn">← 返回政策列表</a>
         </div>
 
         <article class="article-card" id="article-main">
-            <div style="padding: 60px; text-align: center; color: #64748b;">正在加载新闻详情...</div>
+            <div style="padding: 60px; text-align: center; color: #64748b;">正在加载政策详情...</div>
         </article>
     </div>
 
@@ -152,51 +167,65 @@
 
         document.addEventListener('DOMContentLoaded', async function() {
             const urlParams = new URLSearchParams(window.location.search);
-            const articleId = urlParams.get('id');
+            const policyId = urlParams.get('id');
             const container = document.getElementById('article-main');
 
-            if (!articleId) {
-                container.innerHTML = '<div style="padding:40px; text-align:center; color:red;">错误：缺少文章ID</div>';
+            if (!policyId) {
+                container.innerHTML = '<div style="padding:40px; text-align:center; color:red;">错误：缺少政策ID</div>';
                 return;
             }
 
-            const { data: article, error } = await _supabase.from('news').select('*').eq('id', articleId).single();
+            // ★★★ 查询 policies 表 ★★★
+            const { data: policy, error } = await _supabase.from('policies').select('*').eq('id', policyId).single();
 
             if (error) {
-                container.innerHTML = '<div style="padding:40px; text-align:center; color:red;">加载失败或文章不存在</div>';
+                container.innerHTML = '<div style="padding:40px; text-align:center; color:red;">加载失败，政策可能已被删除。</div>';
                 return;
             }
 
-            const contentText = article.content || article.summary || '暂无正文内容';
+            const contentText = policy.content || policy.summary || '暂无详细解读';
             const formattedContent = contentText.split('\n').map(para => para.trim() ? `<p>${para}</p>` : '').join('');
+            const departmentStr = policy.department || '未知部门';
+            const dateStr = policy.publish_date || '未知日期';
             
-            // 这里删除了图片处理逻辑
+            // 处理文件链接按钮
+            let downloadBtnHtml = '';
+            if (policy.file_url) {
+                downloadBtnHtml = `
+                    <div class="download-section">
+                        <a href="${policy.file_url}" target="_blank" class="download-btn">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                            查看/下载官方原文
+                        </a>
+                    </div>
+                `;
+            }
 
-            const dateStr = article.publish_date || '2025-01-01';
-            const sourceStr = article.source || 'LowAltitude Insight';
-
+            // 渲染
             container.innerHTML = `
                 <header class="article-header">
                     <!-- 1. 左上角标签 -->
-                    <div class="category-badge">${article.category || '资讯'}</div>
+                    <div class="category-badge">${policy.level || '政策'}</div>
                     
                     <!-- 2. 标题 -->
-                    <h1 class="article-title">${article.title}</h1>
+                    <h1 class="article-title">${policy.title}</h1>
                     
-                    <!-- 3. 底部元数据 -->
+                    <!-- 3. 日期和部门 (Header的最后一部分) -->
                     <div class="meta-row">
-                        <div><span style="opacity:0.7;">发布于:</span> ${dateStr}</div>
-                        <div><span style="opacity:0.7;">来源:</span> <span style="font-weight:500; color:#334155;">${sourceStr}</span></div>
+                        <div><span style="opacity:0.7;">发布日期:</span> ${dateStr}</div>
+                        <div><span style="opacity:0.7;">发文部门:</span> <span style="font-weight:500; color:#334155;">${departmentStr}</span></div>
                     </div>
                 </header>
 
-                <!-- 4. 正文 (无图片，直接显示) -->
+                <!-- 4. 正文 (在 Header 外面，由 CSS 控制 margin-top 隔开距离) -->
                 <div class="article-body">
                     ${formattedContent}
                 </div>
+
+                ${downloadBtnHtml}
             `;
             
-            document.title = article.title;
+            document.title = policy.title;
         });
     </script>
 </body>

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>新闻详情 | LowAltitude Insight</title>
+    <title>技术详情 | LowAltitude Insight</title>
     <link rel="stylesheet" href="style.css">
     <style>
         /* 全局背景 */
@@ -46,13 +46,13 @@
         /* 1. 左上角：类别标签 */
         .category-badge {
             position: absolute; top: 24px; left: 24px;
-            background-color: #eff6ff; color: #3b82f6; 
+            background-color: #f3e8ff; color: #9333ea; /* 技术类可以用紫色系区分，或者改回蓝色 */
             padding: 5px 12px; border-radius: 6px;
             font-size: 0.85rem; font-weight: 600; letter-spacing: 0.5px; 
             z-index: 10;
         }
 
-        /* 2. 中间：新闻标题 */
+        /* 2. 中间：文章标题 */
         .article-title {
             width: 100%;
             font-size: 2rem; 
@@ -118,9 +118,9 @@
                 <button class="mobile-menu-btn" onclick="toggleMenu()">☰</button>
                 <nav class="nav-links" id="navMenu">
                     <a href="index.html">首页</a>
-                    <a href="news.html" class="active">资讯快报</a>
+                    <a href="news.html">资讯快报</a>
                     <a href="policies.html">政策法规</a>
-                    <a href="tech.html">技术前沿</a>
+                    <a href="tech.html" class="active">技术前沿</a> <!-- 激活状态 -->
                     <a href="companies.html">公司数据库</a>
                 </nav>
                 <div class="header-actions"><button class="btn btn-primary">订阅/登录</button></div>
@@ -130,11 +130,11 @@
 
     <div class="standard-container page-spacing">
         <div class="back-nav">
-            <a href="news.html" class="back-btn">← 返回资讯列表</a>
+            <a href="tech.html" class="back-btn">← 返回技术列表</a>
         </div>
 
         <article class="article-card" id="article-main">
-            <div style="padding: 60px; text-align: center; color: #64748b;">正在加载新闻详情...</div>
+            <div style="padding: 60px; text-align: center; color: #64748b;">正在加载技术详情...</div>
         </article>
     </div>
 
@@ -160,25 +160,31 @@
                 return;
             }
 
-            const { data: article, error } = await _supabase.from('news').select('*').eq('id', articleId).single();
+            // ★★★ 注意：这里默认查询 news 表 ★★★
+            // 如果您的技术文章存储在独立的 'tech' 表中，请将下面的 'news' 改为 'tech'
+            // 或者如果是在 news 表中通过 category='技术' 区分，直接用 id 查询也是可以的
+            const { data: article, error } = await _supabase
+                .from('tech_trends') 
+                .select('*')
+                .eq('id', articleId)
+                .single();
 
             if (error) {
                 container.innerHTML = '<div style="padding:40px; text-align:center; color:red;">加载失败或文章不存在</div>';
                 return;
             }
 
-            const contentText = article.content || article.summary || '暂无正文内容';
+            const contentText = article.content || article.summary || '暂无详细技术解析';
             const formattedContent = contentText.split('\n').map(para => para.trim() ? `<p>${para}</p>` : '').join('');
             
-            // 这里删除了图片处理逻辑
-
             const dateStr = article.publish_date || '2025-01-01';
             const sourceStr = article.source || 'LowAltitude Insight';
+            const categoryStr = article.category || '技术前沿';
 
             container.innerHTML = `
                 <header class="article-header">
-                    <!-- 1. 左上角标签 -->
-                    <div class="category-badge">${article.category || '资讯'}</div>
+                    <!-- 1. 左上角标签 (紫色) -->
+                    <div class="category-badge" style="background:#f3e8ff; color:#9333ea;">${categoryStr}</div>
                     
                     <!-- 2. 标题 -->
                     <h1 class="article-title">${article.title}</h1>
@@ -190,7 +196,7 @@
                     </div>
                 </header>
 
-                <!-- 4. 正文 (无图片，直接显示) -->
+                <!-- 4. 正文 -->
                 <div class="article-body">
                     ${formattedContent}
                 </div>

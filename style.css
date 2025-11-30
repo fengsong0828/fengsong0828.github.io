@@ -232,11 +232,11 @@ footer {
 }
 
 .policy-list li {
-    padding: 15px 0; /* 上下间距加大，更透气 */
+    padding: 12px 0; /* 上下间距加大，更透气 */
     border-bottom: 1px dashed #e2e8f0; /* 虚线分隔符 */
     display: flex;
     flex-direction: column; /* 垂直排列：标题在上，标签在下 */
-    gap: 8px; /* 标题和标签的距离 */
+    gap: 6px; /* 标题和标签的距离 */
 }
 
 .policy-list li:last-child {
@@ -246,9 +246,9 @@ footer {
 .policy-list a {
     font-size: 0.95rem;
     color: #334155;
-    font-weight: 400;
     line-height: 1.5;
-    display: block;
+    text-decoration: none;
+    transition: color 0.2s;
 }
 
 .policy-list a:hover {
@@ -265,18 +265,29 @@ footer {
     line-height: 1;
 }
 
+/* 政策标签 (截图中的灰色小块) */
+.policy-tag {
+    align-self: flex-start; /* 靠左 */
+    display: inline-block;
+    background-color: #f1f5f9; /* 浅灰背景 */
+    color: #94a3b8; /* 浅灰文字 */
+    font-size: 0.75rem;
+    padding: 2px 6px;
+    border-radius: 4px;
+}
+
 /* 2. 专家观点卡片 */
 .expert-profile {
     display: flex;
     align-items: center;
     gap: 12px;
-    margin-bottom: 15px;
+    margin-bottom: 16px;
 }
 
 .expert-avatar {
     width: 48px;
     height: 48px;
-    background-color: #cbd5e1; /* 灰色圆形占位 */
+    background-color: #cbd5e1; /* 截图中的灰色圆圈 */
     border-radius: 50%;
     flex-shrink: 0;
 }
@@ -287,16 +298,15 @@ footer {
 }
 
 .expert-name {
-    font-size: 1rem;
     font-weight: 700;
     color: #1e293b;
-    line-height: 1.2;
+    font-size: 1rem;
 }
 
 .expert-role {
     font-size: 0.8rem;
     color: #64748b;
-    margin-top: 4px;
+    margin-top: 2px;
 }
 
 .expert-quote {
@@ -304,6 +314,8 @@ footer {
     color: #475569;
     font-style: italic; /* 斜体 */
     line-height: 1.6;
+    background: #fff;
+    margin: 0;
 }
 
 /* 响应式 */
@@ -326,4 +338,14 @@ footer {
 @media (max-width: 640px) {
     .dashboard-grid { grid-template-columns: 1fr; }
     .company-grid { grid-template-columns: 1fr; }
+}
+
+/* --- 强制修正侧边栏标题样式 --- */
+.sidebar-widget .widget-title {
+    font-size: 1.1rem !important;    /* 字号稍微大一点 */
+    font-weight: 800 !important;     /* 800 是特粗，确保肉眼可见 */
+    color: #0f172a !important;       /* 深黑色 */
+    margin-bottom: 18px !important;  /* 底部留出间距 */
+    border-bottom: none !important;  /* 去掉可能存在的下划线干扰 */
+    padding-bottom: 0 !important;
 }
