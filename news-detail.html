@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>新闻详情 | LowAltitude Insight</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        body {
+            background-color: #f8fafc;
+        }
+        .page-spacing {
+            padding-top: 40px;
+            padding-bottom: 80px;
+        }
+        
+        /* 返回按钮 */
+        .back-nav { margin-bottom: 20px; }
+        .back-btn {
+            display: inline-flex; align-items: center; gap: 6px;
+            color: #64748b; text-decoration: none; font-size: 0.95rem;
+        }
+        .back-btn:hover { color: #3b82f6; }
+
+        /* 卡片容器 */
+        .article-card {
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            overflow: hidden;
+            max-width: 860px;
+            margin: 0 auto;
+        }
+
+        /* === 头部布局核心 (Header Layout) === */
+        .article-header {
+            position: relative;
+            padding: 90px 50px 50px 50px;
+            width: 100%;
+        }
+
+        /* 1. 左上角：文章类别 */
+        .category-badge {
+            position: absolute;
+            top: 24px;
+            left: 24px;
+            background-color: #eff6ff;
+            color: #3b82f6;
+            padding: 5px 12px;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            z-index: 10;
+        }
+
+        /* 2. 中间：文章标题 */
+        .article-title {
+            display: block;
+            width: 100%;
+            font-size: 2.2rem; /* 稍微增大标题字号 */
+            font-weight: 800;
+            color: #0f172a;
+            line-height: 1.3; /* 减少行高使标题更紧凑 */
+            text-align: left; /* 改为左对齐，更符合阅读习惯 */
+            margin: 0 0 30px 0; /* 调整底部间距 */
+            word-break: break-word; /* 防止长单词溢出 */
+            hyphens: auto; /* 自动断字（如果浏览器支持） */
+        }
+
+        /* 3. 底部：日期和来源 - 关键修复 */
+        .meta-row {
+            display: flex;
+            justify-content: space-between; /* 改为两端对齐 */
+            align-items: center;
+            border-top: 1px solid #f1f5f9;
+            padding-top: 20px;
+            color: #64748b;
+            font-size: 0.9rem;
+            width: 100%;
+        }
+
+        /* 小图标微调 */
+        .meta-item {
+            display: flex;
+            align-items: center;
+            gap: 8px; /* 减少间距使更紧凑 */
+            white-space: nowrap;
+        }
+
+        /* 图片和正文 */
+        .article-hero-img {
+            width: 100%; 
+            height: auto; 
+            max-height: 500px; 
+            object-fit: cover; 
+            display: block;
+        }
+        .article-body {
+            padding: 40px 50px;
+            font-size: 1.1rem;
+            line-height: 1.8;
+            color: #334155;
+            text-align: justify;
+        }
+        .article-body p { 
+            margin-bottom: 20px; 
+        }
+
+        /* 手机端适配 */
+        @media (max-width: 768px) {
+            .article-header { 
+                padding: 60px 20px 20px 20px; 
+            }
+            .article-body { 
+                padding: 30px 20px; 
+            }
+            .article-title { 
+                font-size: 1.7rem; /* 手机端标题也保持较大 */
+                line-height: 1.4;
+            }
+            .category-badge { 
+                top: 15px; 
+                left: 15px; 
+                font-size: 0.8rem; 
+            }
+            .meta-row { 
+                flex-direction: column; /* 手机端改为垂直布局 */
+                align-items: flex-start;
+                gap: 10px;
+                font-size: 0.8rem;
+            }
+        }
+
+        /* 超小屏幕适配 */
+        @media (max-width: 480px) {
+            .article-title {
+                font-size: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 导航栏 -->
+    <header>
+        <div class="standard-container">
+            <div class="nav-inner">
+                <a href="index.html" class="logo">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+                    LowAltitude<span>Insight</span>
+                </a>
+                <button class="mobile-menu-btn" onclick="toggleMenu()">☰</button>
+                <nav class="nav-links" id="navMenu">
+                    <a href="index.html">首页</a>
+                    <a href="news.html" class="active">资讯快报</a>
+                    <a href="policies.html">政策法规</a>
+                    <a href="tech.html">技术前沿</a>
+                    <a href="companies.html">公司数据库</a>
+                </nav>
+                <div class="header-actions">
+                    <button class="btn btn-primary">订阅/登录</button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="standard-container page-spacing">
+        <div class="back-nav">
+            <a href="news.html" class="back-btn">← 返回资讯列表</a>
+        </div>
+
+        <article class="article-card" id="article-main">
+            <div style="padding: 60px; text-align: center; color: #64748b;">正在加载文章详情...</div>
+        </article>
+    </div>
+
+    <footer>
+        <div class="standard-container">
+            <div class="copyright">&copy; 2025 LowAltitude Insight.</div>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+        function toggleMenu() { document.getElementById('navMenu').classList.toggle('active'); }
+
+        const supabaseUrl = 'https://cpvisbzlzatfdqakqsul.supabase.co'; 
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNwdmlzYnpsemF0ZmRxYWtxc3VsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQzOTgwMTYsImV4cCI6MjA3OTk3NDAxNn0.R__eoUjpzFP9_SUxIVnM9T1zpl1pcBTGMzxXLf-Orcg';
+        const _supabase = supabase.createClient(supabaseUrl, supabaseKey);
+
+        document.addEventListener('DOMContentLoaded', async function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const articleId = urlParams.get('id');
+            const container = document.getElementById('article-main');
+
+            if (!articleId) {
+                container.innerHTML = '<div style="padding:40px; text-align:center; color:red;">错误：缺少文章ID</div>';
+                return;
+            }
+
+            const { data: article, error } = await _supabase.from('news').select('*').eq('id', articleId).single();
+
+            if (error) {
+                container.innerHTML = '<div style="padding:40px; text-align:center; color:red;">加载失败</div>';
+                return;
+            }
+
+            const contentText = article.content || article.summary || '暂无正文内容';
+            const formattedContent = contentText.split('\n').map(para => para.trim() ? `<p>${para}</p>` : '').join('');
+            const imgHtml = article.image_url ? `<img src="${article.image_url}" class="article-hero-img" alt="${article.title}">` : '';
+            
+            const dateStr = article.publish_date || '未知日期';
+            const sourceStr = article.source || 'LowAltitude Insight';
+
+            // ★★★ 优化后的布局 ★★★
+            container.innerHTML = `
+                <header class="article-header">
+                    <!-- 1. 左上角类别 -->
+                    <div class="category-badge">${article.category || '资讯'}</div>
+                    
+                    <!-- 2. 充分展开的标题 -->
+                    <h1 class="article-title">${article.title}</h1>
+                    
+                    <!-- 3. 正确分开的元数据行 -->
+                    <div class="meta-row">
+                        <div class="meta-item">
+                            <span style="opacity:0.7;">发布于:</span> 
+                            <span>${dateStr}</span>
+                        </div>
+                        <div class="meta-item">
+                            <span style="opacity:0.7;">来源:</span>
+                            <span style="font-weight:500; color:#334155;">${sourceStr}</span>
+                        </div>
+                    </div>
+                </header>
+
+                ${imgHtml}
+
+                <div class="article-body">
+                    ${formattedContent}
+                </div>
+            `;
+            
+            document.title = article.title;
+        });
+    </script>
+</body>
+</html>
