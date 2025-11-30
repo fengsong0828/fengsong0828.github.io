@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>论坛交流 | LowAltitude Insight</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        /* 论坛专属样式补充 */
+        .forum-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .topic-card { background: #fff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 20px; margin-bottom: 15px; transition: all 0.2s; }
+        .topic-card:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.05); border-color: #cbd5e1; }
+        .topic-meta { font-size: 0.85rem; color: #64748b; display: flex; gap: 15px; margin-top: 10px; align-items: center; }
+        .topic-heat { color: #f59e0b; font-weight: 600; display: flex; align-items: center; gap: 4px; }
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: none; align-items: center; justify-content: center; z-index: 1000; }
+        .modal-box { background: white; width: 90%; max-width: 600px; padding: 25px; border-radius: 12px; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1); }
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; margin-bottom: 5px; font-weight: 600; }
+        .form-control { width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; }
+        .tag-badge { background: #e0f2fe; color: #0284c7; padding: 2px 8px; border-radius: 4px; font-size: 0.8rem; }
+    </style>
+</head>
+<body>
+
+    <!-- 引用原Header，但在nav中将论坛设为active -->
+    <header>
+        <div class="standard-container">
+            <div class="nav-inner">
+                <a href="index.html" class="logo">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+                    LowAltitude<span>Insight</span>
+                </a>
+                <button class="mobile-menu-btn" onclick="toggleMenu()">☰</button>
+                <nav class="nav-links" id="navMenu">
+                    <a href="index.html">首页</a>
+                    <a href="news.html">资讯快报</a>
+                    <a href="policies.html">政策法规</a>
+                    <a href="tech.html">技术前沿</a>
+                    <a href="companies.html">公司数据库</a>
+                    <a href="forum.html" class="active">论坛交流</a>
+                </nav>
+                <div class="header-actions">
+                    <button class="btn btn-outline">搜索</button>
+                    <button class="btn btn-primary" id="auth-btn">订阅/登录</button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- 论坛主体 -->
+    <div class="standard-container" style="margin-top: 40px; margin-bottom: 60px;">
+        <div class="main-layout-grid">
+            
+            <!-- 左侧：话题列表 -->
+            <main class="content-left">
+                <div class="forum-header">
+                    <div class="section-title">最新话题</div>
+                    <button class="btn btn-primary" onclick="openPostModal()">+ 发布新话题</button>
+                </div>
+                
+                <!-- 筛选标签 -->
+                <div style="margin-bottom: 20px; display: flex; gap: 10px;">
+                    <button class="btn btn-outline" onclick="loadTopics('new')">最新发布</button>
+                    <button class="btn btn-outline" onclick="loadTopics('hot')">🔥 热门排行</button>
+                </div>
+
+                <div id="topic-list-container">
+                    <p style="text-align:center; padding: 20px; color:#999;">正在加载讨论...</p>
+                </div>
+            </main>
+
+            <!-- 右侧：侧边栏 -->
+            <aside class="sidebar">
+                <!-- 热门标签/分类 -->
+                <div class="sidebar-widget">
+                    <div class="widget-title">热门板块</div>
+                    <div style="display:flex; flex-wrap:wrap; gap:8px;">
+                        <span class="tag-badge"># eVTOL适航</span>
+                        <span class="tag-badge"># 物流无人机</span>
+                        <span class="tag-badge"># 政策解读</span>
+                        <span class="tag-badge"># 投资风向</span>
+                    </div>
+                </div>
+
+                <!-- 社区公约 -->
+                <div class="sidebar-widget">
+                    <div class="widget-title">社区公约</div>
+                    <p style="font-size:0.85rem; color:#64748b;">
+                        请理性讨论，文明发言。禁止发布广告及违规内容。高质量的技术讨论将被置顶推荐。
+                    </p>
+                </div>
+            </aside>
+        </div>
+    </div>
+
+    <!-- 发帖弹窗 Modal -->
+    <div class="modal-overlay" id="postModal">
+        <div class="modal-box">
+            <h3 style="margin-bottom: 20px;">发布新话题</h3>
+            <div class="form-group">
+                <label>标题</label>
+                <input type="text" id="post-title" class="form-control" placeholder="请输入标题...">
+            </div>
+            <div class="form-group">
+                <label>分类</label>
+                <select id="post-category" class="form-control">
+                    <option value="综合讨论">综合讨论</option>
+                    <option value="政策解读">政策解读</option>
+                    <option value="技术探讨">技术探讨</option>
+                    <option value="市场分析">市场分析</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>内容</label>
+                <textarea id="post-content" class="form-control" rows="5" placeholder="分享你的观点..."></textarea>
+            </div>
+            <!-- 隐藏域：引用来源 -->
+            <input type="hidden" id="post-source">
+            
+            <div style="display:flex; justify-content: flex-end; gap: 10px;">
+                <button class="btn btn-outline" onclick="closePostModal()">取消</button>
+                <button class="btn btn-primary" onclick="submitTopic()">发布</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer (保持一致，省略部分代码) -->
+    <footer>
+        <div class="standard-container">
+            <div style="text-align:center; color:#64748b; font-size:0.85rem; padding: 20px;">
+                &copy; 2025 LowAltitude Insight.
+            </div>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+        const supabaseUrl = 'https://cpvisbzlzatfdqakqsul.supabase.co'; 
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNwdmlzYnpsemF0ZmRxYWtxc3VsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQzOTgwMTYsImV4cCI6MjA3OTk3NDAxNn0.R__eoUjpzFP9_SUxIVnM9T1zpl1pcBTGMzxXLf-Orcg';
+        const _supabase = supabase.createClient(supabaseUrl, supabaseKey);
+
+        let currentUser = null;
+
+        document.addEventListener('DOMContentLoaded', async function() {
+            await checkUser();
+            loadTopics('new');
+            checkUrlParamsForShare(); // 检查是否是从新闻页跳转过来的
+        });
+
+        // 1. 检查用户登录
+        async function checkUser() {
+            const { data: { session } } = await _supabase.auth.getSession();
+            const btn = document.getElementById('auth-btn');
+            if (session) {
+                currentUser = session.user;
+                btn.innerText = currentUser.email.split('@')[0];
+                btn.style.backgroundColor = '#475569';
+            } else {
+                btn.innerText = '登录';
+                btn.onclick = () => window.location.href = 'login.html';
+            }
+        }
+
+        // 2. 加载话题列表
+        async function loadTopics(sortType) {
+            const container = document.getElementById('topic-list-container');
+            container.innerHTML = '<p style="text-align:center; padding:20px;">加载中...</p>';
+
+            let query = _supabase.from('forum_topics').select('*');
+
+            if (sortType === 'hot') {
+                query = query.order('heat_score', { ascending: false });
+            } else {
+                query = query.order('created_at', { ascending: false });
+            }
+
+            const { data, error } = await query;
+
+            if (error) {
+                console.error(error);
+                return;
+            }
+
+            if (data && data.length > 0) {
+                container.innerHTML = '';
+                data.forEach(topic => {
+                    const date = new Date(topic.created_at).toLocaleDateString();
+                    // 热度计算逻辑展示
+                    const isHot = topic.heat_score > 50 ? '🔥 ' : '';
+                    
+                    container.innerHTML += `
+                        <div class="topic-card">
+                            <div style="display:flex; justify-content:space-between;">
+                                <span class="tag-badge">${topic.category}</span>
+                                <span style="font-size:0.8rem; color:#94a3b8;">${date}</span>
+                            </div>
+                            <!-- 点击标题跳转到详情页 -->
+                            <h3 style="margin: 10px 0;">
+                                <a href="forum-topic.html?id=${topic.id}" style="text-decoration:none; color:#1e293b;">
+                                    ${isHot}${topic.title}
+                                </a>
+                            </h3>
+                            <p style="color:#64748b; font-size:0.9rem; margin-bottom:15px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">
+                                ${topic.content}
+                            </p>
+                            <div class="topic-meta">
+                                <span>👤 ${topic.user_email ? topic.user_email.split('@')[0] : '用户'}</span>
+                                <span>💬 ${topic.comments_count} 评论</span>
+                                <span class="topic-heat">⚡ ${topic.heat_score} 热度</span>
+                            </div>
+                        </div>
+                    `;
+                });
+            } else {
+                container.innerHTML = '<p style="text-align:center;">暂无话题，来发布第一个吧！</p>';
+            }
+        }
+
+        // 3. 模态框逻辑
+        function openPostModal() {
+            if (!currentUser) {
+                alert('请先登录后发布话题');
+                window.location.href = 'login.html';
+                return;
+            }
+            document.getElementById('postModal').style.display = 'flex';
+        }
+        function closePostModal() {
+            document.getElementById('postModal').style.display = 'none';
+        }
+
+        // 4. 处理从新闻页面转发过来的逻辑
+        // 假设新闻页链接为: forum.html?action=share&title=新闻标题&source=新闻链接
+        function checkUrlParamsForShare() {
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.get('action') === 'share') {
+                const title = urlParams.get('title');
+                const source = urlParams.get('source');
+                
+                if (title) {
+                    document.getElementById('post-title').value = `[讨论] ${title}`;
+                    document.getElementById('post-content').value = `我对这篇新闻很感兴趣，大家怎么看？\n原文链接: ${source}`;
+                    document.getElementById('post-source').value = source;
+                    // 自动打开弹窗 (需要稍微延迟等待 Auth 检查，或者简单处理)
+                    setTimeout(() => {
+                         if(currentUser) openPostModal();
+                    }, 1000);
+                }
+            }
+        }
+
+        // 5. 提交新话题
+        async function submitTopic() {
+            const title = document.getElementById('post-title').value;
+            const content = document.getElementById('post-content').value;
+            const category = document.getElementById('post-category').value;
+            const source = document.getElementById('post-source').value;
+
+            if (!title || !content) {
+                alert('标题和内容不能为空');
+                return;
+            }
+
+            const { error } = await _supabase.from('forum_topics').insert({
+                user_id: currentUser.id,
+                user_email: currentUser.email,
+                title: title,
+                content: content,
+                category: category,
+                source_news_link: source,
+                heat_score: 1 // 初始热度
+            });
+
+            if (error) {
+                alert('发布失败: ' + error.message);
+            } else {
+                alert('发布成功！');
+                closePostModal();
+                loadTopics('new'); // 刷新列表
+                // 清空表单
+                document.getElementById('post-title').value = '';
+                document.getElementById('post-content').value = '';
+            }
+        }
+        
+        function toggleMenu() { document.getElementById('navMenu').classList.toggle('active'); }
+    </script>
+</body>
+</html>

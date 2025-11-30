@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>话题详情 | LowAltitude Insight</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        /* 详情页特有样式 */
+        .topic-detail-card { background: #fff; padding: 30px; border-radius: 8px; margin-bottom: 30px; border:1px solid #e2e8f0; }
+        .comment-item { border-bottom: 1px solid #f1f5f9; padding: 20px 0; }
+        .comment-item:last-child { border-bottom: none; }
+        .action-bar { display: flex; gap: 15px; margin-top: 20px; border-top: 1px solid #f1f5f9; padding-top: 20px; }
+        .btn-like { background: #fef3c7; color: #d97706; border: none; padding: 8px 16px; border-radius: 20px; cursor: pointer; display: flex; align-items: center; gap: 5px; font-weight: bold; }
+        .btn-like:hover { background: #fde68a; }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="standard-container">
+            <div class="nav-inner">
+                <a href="index.html" class="logo">LowAltitude Insight</a>
+                <nav class="nav-links">
+                    <a href="forum.html">← 返回论坛列表</a>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <div class="standard-container" style="margin-top: 40px;">
+        <!-- 话题内容区 -->
+        <div class="topic-detail-card" id="main-topic-area">
+            <p>加载话题中...</p>
+        </div>
+
+        <!-- 评论列表区 -->
+        <div class="topic-detail-card">
+            <h3>评论交流</h3>
+            <div id="comments-container">
+                <!-- 评论将在这里加载 -->
+            </div>
+
+            <!-- 发表评论框 -->
+            <div style="margin-top: 30px; background: #f8fafc; padding: 20px; border-radius: 8px;">
+                <h4 style="margin-bottom: 15px;">发表看法</h4>
+                <textarea id="comment-input" class="form-control" rows="4" style="width:100%; padding:10px; border:1px solid #cbd5e1; border-radius:6px; margin-bottom:10px;" placeholder="理性发言，构建高质量社区..."></textarea>
+                <div style="text-align: right;">
+                    <button class="btn btn-primary" onclick="submitComment()">提交评论</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+        const supabaseUrl = 'https://cpvisbzlzatfdqakqsul.supabase.co'; 
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNwdmlzYnpsemF0ZmRxYWtxc3VsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQzOTgwMTYsImV4cCI6MjA3OTk3NDAxNn0.R__eoUjpzFP9_SUxIVnM9T1zpl1pcBTGMzxXLf-Orcg';
+        const _supabase = supabase.createClient(supabaseUrl, supabaseKey);
+
+        let topicId = null;
+        let currentUser = null;
+
+        document.addEventListener('DOMContentLoaded', async function() {
+            // 获取 URL 中的 id 参数
+            const params = new URLSearchParams(window.location.search);
+            topicId = params.get('id');
+            
+            if (!topicId) {
+                alert('话题不存在');
+                window.location.href = 'forum.html';
+                return;
+            }
+
+            await checkUser();
+            await loadTopicDetail();
+            await loadComments();
+        });
+
+        async function checkUser() {
+            const { data: { session } } = await _supabase.auth.getSession();
+            if (session) currentUser = session.user;
+        }
+
+        // 1. 加载话题详情
+        async function loadTopicDetail() {
+            const { data, error } = await _supabase
+                .from('forum_topics')
+                .select('*')
+                .eq('id', topicId)
+                .single();
+
+            if (error) {
+                document.getElementById('main-topic-area').innerHTML = '<p>话题加载失败</p>';
+                return;
+            }
+
+            // 更新页面标题
+            document.title = `${data.title} | 论坛`;
+
+            // 渲染内容
+            document.getElementById('main-topic-area').innerHTML = `
+                <div style="margin-bottom:10px;">
+                    <span class="tag-badge">${data.category}</span>
+                    <span style="color:#94a3b8; font-size:0.9rem; margin-left:10px;">${new Date(data.created_at).toLocaleString()}</span>
+                </div>
+                <h1 style="font-size:1.8rem; margin-bottom:20px;">${data.title}</h1>
+                <div style="font-size:1.1rem; line-height:1.8; color:#334155; white-space: pre-wrap;">${data.content}</div>
+                
+                ${data.source_news_link ? `<div style="margin-top:20px; padding:10px; background:#f1f5f9; font-size:0.9rem;">🔗 引用来源: <a href="${data.source_news_link}" target="_blank">${data.source_news_link}</a></div>` : ''}
+
+                <div class="action-bar">
+                    <button class="btn-like" onclick="handleLike(${data.likes})">
+                        👍 点赞 (<span id="like-count">${data.likes}</span>)
+                    </button>
+                    <span style="display:flex; align-items:center; color:#64748b;">🔥 热度: ${data.heat_score}</span>
+                </div>
+            `;
+            
+            // 增加阅读数 (简单实现，每次刷新+1)
+            _supabase.rpc('increment_views', { topic_id: topicId }); 
+            // 注：需要在Supabase创建 increment_views 函数，这里为了简化先忽略报错
+        }
+
+        // 2. 加载评论
+        async function loadComments() {
+            const { data } = await _supabase
+                .from('forum_comments')
+                .select('*')
+                .eq('topic_id', topicId)
+                .order('created_at', { ascending: true });
+
+            const container = document.getElementById('comments-container');
+            if (data && data.length > 0) {
+                container.innerHTML = '';
+                data.forEach(comment => {
+                    container.innerHTML += `
+                        <div class="comment-item">
+                            <div style="font-weight:bold; color:#334155; margin-bottom:5px;">
+                                ${comment.user_email ? comment.user_email.split('@')[0] : '匿名用户'}
+                                <span style="font-weight:normal; color:#94a3b8; font-size:0.8rem; margin-left:10px;">
+                                    ${new Date(comment.created_at).toLocaleString()}
+                                </span>
+                            </div>
+                            <div style="color:#475569;">${comment.content}</div>
+                        </div>
+                    `;
+                });
+            } else {
+                container.innerHTML = '<p style="color:#999;">暂无评论，快来抢沙发！</p>';
+            }
+        }
+
+        // 3. 提交评论
+        async function submitComment() {
+            if (!currentUser) {
+                alert('请先登录');
+                window.location.href = 'login.html';
+                return;
+            }
+            const content = document.getElementById('comment-input').value;
+            if (!content) return;
+
+            // 插入评论
+            const { error } = await _supabase.from('forum_comments').insert({
+                topic_id: topicId,
+                user_id: currentUser.id,
+                user_email: currentUser.email,
+                content: content
+            });
+
+            if (!error) {
+                // 更新话题表中的评论数和热度 (简单处理：前端触发更新或后端Trigger)
+                // 这里手动更新本地显示，实际应通过SQL Trigger在后端自动加
+                alert('评论成功');
+                document.getElementById('comment-input').value = '';
+                loadComments();
+                // 简单增加热度逻辑 (需要在后端实现比较严谨，这里仅演示)
+                await _supabase.rpc('increment_stats', { t_id: topicId });
+            } else {
+                alert(error.message);
+            }
+        }
+
+        // 4. 点赞逻辑
+        async function handleLike(currentLikes) {
+            if (!currentUser) {
+                alert('登录后才能点赞');
+                return;
+            }
+            // 简单实现：直接+1 (生产环境应检查 forum_likes 表防止重复)
+            const newLikes = currentLikes + 1;
+            
+            const { error } = await _supabase
+                .from('forum_topics')
+                .update({ likes: newLikes, heat_score: newLikes * 2 }) // 假设热度主要受点赞影响
+                .eq('id', topicId);
+
+            if (!error) {
+                document.getElementById('like-count').innerText = newLikes;
+                // 禁用按钮
+                document.querySelector('.btn-like').disabled = true;
+                document.querySelector('.btn-like').style.background = '#e2e8f0';
+            }
+        }
+    </script>
+</body>
+</html>
