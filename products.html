@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>全球飞行器产品库 | LowAltitude Insight</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        /* --- 产品库专用样式 --- */
+        
+        /* 顶部筛选栏 */
+        .filter-section {
+            background: #fff;
+            border-bottom: 1px solid #e2e8f0;
+            padding: 20px 0;
+            position: sticky;
+            top: 0;
+            z-index: 90; /* 保证在导航栏之下，但覆盖内容 */
+        }
+        
+        .filter-container {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .filter-group {
+            display: flex;
+            gap: 10px;
+        }
+
+        .filter-select {
+            padding: 8px 12px;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            color: #334155;
+            background-color: #f8fafc;
+            outline: none;
+        }
+
+        .search-input {
+            padding: 8px 12px;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            width: 240px;
+            font-size: 0.9rem;
+        }
+
+        /* 产品网格布局 */
+        .products-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); /* 响应式网格 */
+            gap: 24px;
+            padding: 40px 0;
+        }
+
+        /* 产品卡片 */
+        .product-card {
+            background: #fff;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            overflow: hidden;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .product-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+        }
+
+        /* 产品图片区 */
+        .product-img-box {
+            height: 180px;
+            background-color: #f1f5f9;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .product-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        /* 状态标签 */
+        .status-badge {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: bold;
+            color: white;
+        }
+        .status-certified { background-color: #10b981; } /* 绿色：已取证 */
+        .status-testing { background-color: #3b82f6; }   /* 蓝色：测试中 */
+        .status-concept { background-color: #f59e0b; }   /* 橙色：概念 */
+
+        /* 卡片内容 */
+        .product-content {
+            padding: 20px;
+        }
+
+        .product-maker {
+            font-size: 0.85rem;
+            color: #64748b;
+            margin-bottom: 4px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .product-name {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #1e293b;
+            margin-bottom: 12px;
+        }
+
+        /* 关键参数网格 */
+        .specs-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 8px;
+            background: #f8fafc;
+            padding: 10px;
+            border-radius: 8px;
+            margin-top: 10px;
+        }
+
+        .spec-item {
+            text-align: center;
+        }
+
+        .spec-val {
+            font-weight: 700;
+            color: #334155;
+            font-size: 0.9rem;
+        }
+
+        .spec-label {
+            font-size: 0.7rem;
+            color: #94a3b8;
+            margin-top: 2px;
+        }
+
+        .country-flag {
+            font-size: 1rem;
+        }
+
+    </style>
+</head>
+<body>
+
+    <!-- 1. 导航栏 Header (与首页保持一致) -->
+    <header>
+        <div class="standard-container">
+            <div class="nav-inner">
+                <a href="index.html" class="logo">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+                    LowAltitude<span>Insight</span>
+                </a>
+                <button class="mobile-menu-btn" onclick="toggleMenu()">☰</button>
+                <nav class="nav-links" id="navMenu">
+                    <a href="index.html">首页</a>
+                    <a href="news.html">资讯快报</a>
+                    <a href="policies.html">政策法规</a>
+                    <a href="tech.html">技术前沿</a>
+                    <a href="products.html" class="active">全球产品库</a> <!-- 当前页高亮 -->
+                </nav>
+                <div class="header-actions">
+                    <button class="btn btn-outline">搜索</button>
+                    <button class="btn btn-primary" id="auth-btn">订阅/登录</button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- 2. 页面标题 -->
+    <div style="background: #1e293b; padding: 40px 0; color: white;">
+        <div class="standard-container">
+            <h1 style="font-size: 2rem; margin-bottom: 10px;">全球低空飞行器产品库</h1>
+            <p style="color: #94a3b8;">收录全球主流 eVTOL、货运无人机及飞行汽车技术参数。</p>
+        </div>
+    </div>
+
+    <!-- 3. 筛选与搜索栏 -->
+    <div class="filter-section">
+        <div class="standard-container filter-container">
+            <div class="filter-group">
+                <select class="filter-select" id="typeFilter" onchange="applyFilters()">
+                    <option value="all">所有类型</option>
+                    <option value="eVTOL">载人 eVTOL</option>
+                    <option value="Cargo">货运无人机</option>
+                    <option value="FlyingCar">陆空两栖</option>
+                </select>
+                <select class="filter-select" id="regionFilter" onchange="applyFilters()">
+                    <option value="all">全球区域</option>
+                    <option value="China">中国</option>
+                    <option value="USA">美国</option>
+                    <option value="Europe">欧洲</option>
+                </select>
+                <select class="filter-select" id="statusFilter" onchange="applyFilters()">
+                    <option value="all">所有状态</option>
+                    <option value="Certified">已取证</option>
+                    <option value="Testing">试飞中</option>
+                    <option value="Concept">概念设计</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <input type="text" class="search-input" id="searchInput" placeholder="搜索型号或公司..." onkeyup="applyFilters()">
+            </div>
+        </div>
+    </div>
+
+    <!-- 4. 产品展示网格 -->
+    <div class="standard-container">
+        <div class="products-grid" id="product-container">
+            <!-- JS 将在这里动态生成卡片 -->
+            <p style="text-align:center; width:100%; grid-column: 1/-1; color:#94a3b8;">正在加载全球数据...</p>
+        </div>
+    </div>
+
+    <!-- 5. Footer (保持一致) -->
+    <footer>
+        <div class="standard-container">
+            <div class="copyright" style="text-align:center; color:#64748b; font-size:0.85rem; padding: 20px 0;">
+                &copy; 2025 LowAltitude Insight.
+            </div>
+        </div>
+    </footer>
+
+    <!-- JS 逻辑 -->
+    <script>
+        // 模拟数据 (如果您有 Supabase 表，可以替换为 fetch 请求)
+        const productsData = [
+            {
+                id: 1,
+                name: "EH216-S",
+                maker: "亿航智能 EHang",
+                region: "China",
+                type: "eVTOL",
+                status: "Certified", // 已取证
+                specs: { range: "30 km", speed: "130 km/h", payload: "220 kg" },
+                img: "https://images.unsplash.com/photo-1559067096-49ebca56b2d9?auto=format&fit=crop&w=800&q=80" // 占位图
+            },
+            {
+                id: 2,
+                name: "Joby S4",
+                maker: "Joby Aviation",
+                region: "USA",
+                type: "eVTOL",
+                status: "Testing", // 测试中
+                specs: { range: "240 km", speed: "320 km/h", payload: "4 Pax" },
+                img: "https://images.unsplash.com/photo-1558588942-28d20079bcbd?auto=format&fit=crop&w=800&q=80"
+            },
+            {
+                id: 3,
+                name: "Lilium Jet",
+                maker: "Lilium",
+                region: "Europe",
+                type: "eVTOL",
+                status: "Testing",
+                specs: { range: "250 km", speed: "300 km/h", payload: "6 Pax" },
+                img: "https://images.unsplash.com/photo-1476611338391-6f395a0ebc7b?auto=format&fit=crop&w=800&q=80"
+            },
+            {
+                id: 4,
+                name: "旅航者 X2",
+                maker: "小鹏汇天 XPeng",
+                region: "China",
+                type: "FlyingCar",
+                status: "Testing",
+                specs: { range: "35 min", speed: "130 km/h", payload: "2 Pax" },
+                img: "https://images.unsplash.com/photo-1571623898183-a15f52a4077d?auto=format&fit=crop&w=800&q=80"
+            },
+            {
+                id: 5,
+                name: "Midnight",
+                maker: "Archer Aviation",
+                region: "USA",
+                type: "eVTOL",
+                status: "Testing",
+                specs: { range: "160 km", speed: "240 km/h", payload: "4 Pax" },
+                img: "https://images.unsplash.com/photo-1523983388277-336a66bf9bcd?auto=format&fit=crop&w=800&q=80"
+            },
+            {
+                id: 6,
+                name: "大疆运载 FC30",
+                maker: "DJI 大疆",
+                region: "China",
+                type: "Cargo",
+                status: "Certified",
+                specs: { range: "16 km", speed: "20 m/s", payload: "30 kg" },
+                img: "https://images.unsplash.com/photo-1473968512647-3e447244af8f?auto=format&fit=crop&w=800&q=80"
+            }
+        ];
+
+        // 辅助函数：获取状态样式
+        function getStatusConfig(status) {
+            switch(status) {
+                case 'Certified': return { text: '已适航取证', class: 'status-certified' };
+                case 'Testing': return { text: '试飞/认证中', class: 'status-testing' };
+                case 'Concept': return { text: '概念阶段', class: 'status-concept' };
+                default: return { text: status, class: 'status-testing' };
+            }
+        }
+
+        // 辅助函数：获取国旗Emoji
+        function getFlag(region) {
+            if (region === 'China') return '🇨🇳';
+            if (region === 'USA') return '🇺🇸';
+            if (region === 'Europe') return '🇪🇺';
+            return '🌐';
+        }
+
+        // 渲染函数
+        function renderProducts(data) {
+            const container = document.getElementById('product-container');
+            container.innerHTML = '';
+
+            if (data.length === 0) {
+                container.innerHTML = '<div style="grid-column:1/-1; text-align:center; padding:40px; color:#94a3b8;">未找到匹配的产品</div>';
+                return;
+            }
+
+            data.forEach(item => {
+                const statusConfig = getStatusConfig(item.status);
+                const flag = getFlag(item.region);
+                
+                const cardHTML = `
+                    <div class="product-card" onclick="alert('即将跳转到 ${item.name} 详情页')">
+                        <div class="product-img-box">
+                            <img src="${item.img}" alt="${item.name}" class="product-img">
+                            <span class="status-badge ${statusConfig.class}">${statusConfig.text}</span>
+                        </div>
+                        <div class="product-content">
+                            <div class="product-maker">
+                                <span>${item.maker}</span>
+                                <span class="country-flag" title="${item.region}">${flag}</span>
+                            </div>
+                            <div class="product-name">${item.name}</div>
+                            
+                            <div class="specs-grid">
+                                <div class="spec-item">
+                                    <div class="spec-val">${item.specs.range}</div>
+                                    <div class="spec-label">航程</div>
+                                </div>
+                                <div class="spec-item">
+                                    <div class="spec-val">${item.specs.speed}</div>
+                                    <div class="spec-label">最大速度</div>
+                                </div>
+                                <div class="spec-item">
+                                    <div class="spec-val">${item.specs.payload}</div>
+                                    <div class="spec-label">载重/座</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                container.innerHTML += cardHTML;
+            });
+        }
+
+        // 筛选逻辑
+        function applyFilters() {
+            const typeVal = document.getElementById('typeFilter').value;
+            const regionVal = document.getElementById('regionFilter').value;
+            const statusVal = document.getElementById('statusFilter').value;
+            const searchVal = document.getElementById('searchInput').value.toLowerCase();
+
+            const filtered = productsData.filter(item => {
+                // 类型筛选
+                if (typeVal !== 'all' && item.type !== typeVal) return false;
+                // 区域筛选
+                if (regionVal !== 'all' && item.region !== regionVal) return false;
+                // 状态筛选
+                if (statusVal !== 'all' && item.status !== statusVal) return false;
+                // 搜索筛选 (匹配名称或厂商)
+                if (searchVal) {
+                    const matchName = item.name.toLowerCase().includes(searchVal);
+                    const matchMaker = item.maker.toLowerCase().includes(searchVal);
+                    if (!matchName && !matchMaker) return false;
+                }
+                return true;
+            });
+
+            renderProducts(filtered);
+        }
+
+        // 页面加载时初始化
+        document.addEventListener('DOMContentLoaded', () => {
+            renderProducts(productsData);
+        });
+
+        // 手机菜单 (复制自 index)
+        function toggleMenu() { 
+            document.getElementById('navMenu').classList.toggle('active'); 
+        }
+    </script>
+</body>
+</html>
