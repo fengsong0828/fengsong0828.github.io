@@ -66,7 +66,8 @@
             { name: '长沙', value: [112.938814, 28.228209, 70], detail: '全国首个全域低空空域管理改革试点省份核心城市。', meta: '试点类型: 空域管理改革' }
         ];
 
-        fetch('https://geo.datav.aliyun.com/areas_v3/bound/100000_full.json')
+        //fetch('https://geo.datav.aliyun.com/areas_v3/bound/100000_full.json')
+        fetch('./china.json')
             .then(response => response.json())
             .then(geoJson => {
                 myChart.hideLoading();
