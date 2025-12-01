@@ -445,8 +445,9 @@
             else if (tableName === 'tech_trends') {
                 // --- 技术前沿 (Tech Trends) ---
                 // Tech 表同样，看正文是存 summary 还是 content
-                record.summary = uiContent; 
-
+                record.summary = uiSummary; // 存入精简摘要
+                record.content = uiContent; // 存入丰富正文
+                
                 record.type = ai.tech_type || '新产品';
                 record.org = ai.org || '未知机构';
             }
@@ -458,19 +459,36 @@
             }
 
             // 5. 执行插入
+            // 5. 执行插入 - 修改为使用 upsert 避免主键冲突
             try {
                 console.log(`正在向 [${tableName}] 插入数据:`, record);
-                const { error } = await _supabase.from(tableName).insert([record]);
-
+                
+                // 方法1: 使用 upsert（基于主键或唯一约束）
+                const { error } = await _supabase
+                    .from(tableName)
+                    .upsert(record, { onConflict: 'id' }); // 如果有id就更新，没有就插入
+                
+                // 或者方法2: 确保不指定 id 字段，让数据库自动生成
+                // 如果你的 record 包含 id 字段，删除它：
+                // delete record.id;
+                // const { error } = await _supabase
+                //     .from(tableName)
+                //     .insert([record]);
+                
                 if (error) throw error;
 
-                alert('✅ 保存成功！\n文章已存入“待发布”列表。');
-                // 可选择跳转或重置
+                alert('✅ 保存成功！\n文章已存入"待发布"列表。');
                 location.href = 'admin.html';
 
             } catch (err) {
                 console.error('[保存失败]', err);
-                alert('保存失败: ' + err.message);
+                
+                // 如果是主键冲突，提供更明确的提示
+                if (err.message.includes('duplicate key') || err.message.includes('tech_trends_pkey')) {
+                    alert('保存失败：数据库主键冲突。这通常意味着序列值有问题。\n\n尝试方案：\n1. 刷新页面重新生成\n2. 或在数据库执行：SELECT setval(pg_get_serial_sequence(\'tech_trends\', \'id\'), (SELECT MAX(id) FROM tech_trends));');
+                } else {
+                    alert('保存失败: ' + err.message);
+                }
             }
         }
     </script>

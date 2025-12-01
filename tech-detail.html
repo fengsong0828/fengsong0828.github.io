@@ -106,6 +106,44 @@
             .article-title { font-size: 1.6rem; }
             .meta-row { flex-direction: column; gap: 10px; align-items: center; }
         }
+
+        .source-link-section {
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px dashed #e2e8f0;
+            text-align: center;
+        }
+        .btn-source {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background-color: #f1f5f9;
+            color: #475569;
+            padding: 10px 20px;
+            border-radius: 30px;
+            text-decoration: none;
+            font-size: 0.9rem;
+            font-weight: 600;
+            transition: all 0.2s;
+            border: 1px solid #cbd5e1;
+        }
+        .btn-source:hover {
+            background-color: #e2e8f0;
+            color: #3b82f6;
+            border-color: #3b82f6;
+        }
+
+        .summary-box {
+        background: #fcfaff; /* 淡淡的紫色背景 */
+        border-left: 4px solid #9333ea; /* 紫色边框 */
+        padding: 20px 25px;
+        margin-bottom: 30px;
+        font-style: italic;
+        color: #4b5563;
+        font-size: 1.05rem;
+        line-height: 1.7;
+        border-radius: 0 8px 8px 0;
+    }
     </style>
 </head>
 <body>
@@ -176,31 +214,76 @@
                 return;
             }
 
-            const contentText = article.content || article.summary || '暂无详细技术解析';
-            const formattedContent = contentText.split('\n').map(para => para.trim() ? `<p>${para}</p>` : '').join('');
-            
-            const dateStr = article.publish_date || '2025-01-01';
-            const sourceStr = article.source || 'LowAltitude Insight';
-            const categoryStr = article.category || '技术前沿';
+            // 1. 处理摘要 (Summary)
+            let summaryHtml = '';
+            // 如果有摘要，且不为空，则生成摘要框
+            if (article.summary && article.summary.trim() !== '') {
+                summaryHtml = `<div class="summary-box"><strong>💡 核心摘要：</strong>${article.summary}</div>`;
+            }
 
+            // 2. 处理正文 (Content)
+            // 优先用 content，如果没有则为空字符串
+            const contentText = article.content || '';
+            let bodyHtml = '';
+            
+            if (contentText) {
+                // 处理换行符，生成段落
+                bodyHtml = contentText.split('\n').map(para => para.trim() ? `<p>${para}</p>` : '').join('');
+            } else if (!summaryHtml) {
+                // 如果既没摘要也没正文
+                bodyHtml = '<p style="color:#999; text-align:center;">暂无详细内容</p>';
+            }
+
+            // 3. 字段映射
+            const dateStr = article.publish_date || '未知日期';
+            // 技术类优先显示机构(org)，没有再显示来源(source)
+            const sourceStr = article.org || article.source || 'LowAltitude Insight';
+            const categoryStr = article.type || '技术前沿';
+            
+            // 图片
+            const imgHtml = article.image_url ? `<img src="${article.image_url}" class="article-hero-img" alt="${article.title}">` : '';
+
+            // 4. 原文链接按钮
+            const sourceUrl = article.source_url; 
+            let sourceLinkHtml = '';
+
+            if (sourceUrl && (sourceUrl.startsWith('http') || sourceUrl.startsWith('https'))) {
+                sourceLinkHtml = `
+                    <div class="source-link-section">
+                        <a href="${sourceUrl}" target="_blank" rel="noopener noreferrer" class="btn-source">
+                            🔗 查看技术原文 / 专利文件
+                        </a>
+                    </div>
+                `;
+            }
+
+            // 5. 渲染页面结构
             container.innerHTML = `
                 <header class="article-header">
-                    <!-- 1. 左上角标签 (紫色) -->
+                    <!-- 标签 -->
                     <div class="category-badge" style="background:#f3e8ff; color:#9333ea;">${categoryStr}</div>
                     
-                    <!-- 2. 标题 -->
+                    <!-- 标题 -->
                     <h1 class="article-title">${article.title}</h1>
                     
-                    <!-- 3. 底部元数据 -->
+                    <!-- 元数据 (两端对齐) -->
                     <div class="meta-row">
-                        <div><span style="opacity:0.7;">发布于:</span> ${dateStr}</div>
-                        <div><span style="opacity:0.7;">来源:</span> <span style="font-weight:500; color:#334155;">${sourceStr}</span></div>
+                        <div><span style="opacity:0.7;">发布日期:</span> ${dateStr}</div>
+                        <div><span style="opacity:0.7;">研发机构:</span> <span style="font-weight:500; color:#334155;">${sourceStr}</span></div>
                     </div>
                 </header>
 
-                <!-- 4. 正文 -->
+                ${imgHtml}
+
                 <div class="article-body">
-                    ${formattedContent}
+                    <!-- 摘要放在最上面 -->
+                    ${summaryHtml}
+                    
+                    <!-- 正文 -->
+                    ${bodyHtml}
+                    
+                    <!-- 底部原文链接 -->
+                    ${sourceLinkHtml}
                 </div>
             `;
             

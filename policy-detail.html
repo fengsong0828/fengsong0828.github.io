@@ -121,6 +121,33 @@
             .article-body { padding: 0 20px 40px 20px; margin-top: 20px !important; }
             .meta-row { flex-direction: column; gap: 10px; align-items: center; }
         }
+
+        /* --- 新增样式：原文链接按钮 --- */
+        .source-link-section {
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px dashed #e2e8f0;
+            text-align: center;
+        }
+        .btn-source {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background-color: #f1f5f9;
+            color: #475569;
+            padding: 10px 20px;
+            border-radius: 30px;
+            text-decoration: none;
+            font-size: 0.9rem;
+            font-weight: 600;
+            transition: all 0.2s;
+            border: 1px solid #cbd5e1;
+        }
+        .btn-source:hover {
+            background-color: #e2e8f0;
+            color: #3b82f6;
+            border-color: #3b82f6;
+        }
     </style>
 </head>
 <body>
@@ -190,14 +217,15 @@
             const departmentStr = policy.department || '未知部门';
             const dateStr = policy.publish_date || '未知日期';
             
-            // 处理文件链接按钮
-            let downloadBtnHtml = '';
-            if (policy.file_url) {
-                downloadBtnHtml = `
-                    <div class="download-section">
-                        <a href="${policy.file_url}" target="_blank" class="download-btn">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
-                            查看/下载官方原文
+            // 优先使用 source_url，如果没有则尝试 file_url (兼容旧数据)
+            const sourceUrl = policy.source_url || policy.file_url; 
+            let sourceLinkHtml = '';
+
+            if (sourceUrl && (sourceUrl.startsWith('http') || sourceUrl.startsWith('https'))) {
+                sourceLinkHtml = `
+                    <div class="source-link-section">
+                        <a href="${sourceUrl}" target="_blank" rel="noopener noreferrer" class="btn-source">
+                            🔗 查看官方原文 / 下载文件
                         </a>
                     </div>
                 `;
@@ -222,9 +250,8 @@
                 <!-- 4. 正文 (在 Header 外面，由 CSS 控制 margin-top 隔开距离) -->
                 <div class="article-body">
                     ${formattedContent}
+                    ${sourceLinkHtml}
                 </div>
-
-                ${downloadBtnHtml}
             `;
             
             document.title = policy.title;

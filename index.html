@@ -437,76 +437,77 @@
             }
             }
 
-        // ★★★ 核心函数：聚合 News, Policies, Tech_Trends ★★★
+        // A. 加载聚合动态 (News & Policies & Tech)
         async function loadUnifiedFeed() {
             const container = document.getElementById('unified-feed-container');
             container.innerHTML = '<div class="loading-spinner">正在聚合多源数据...</div>';
 
             try {
-                // 1. 并行请求三张表的数据
+                // 并行请求三张表
                 const [newsRes, policiesRes, techRes] = await Promise.all([
-                    _supabase.from('news').select('*').eq('draft', false) .order('publish_date', { ascending: false }).limit(20),
-                    _supabase.from('policies').select('*').eq('draft', false) .order('publish_date', { ascending: false }).limit(20),
-                    _supabase.from('tech_trends').select('*').eq('draft', false) .order('publish_date', { ascending: false }).limit(20)
+                    _supabase.from('news').select('*').eq('draft', false).order('publish_date', { ascending: false }).limit(20),
+                    _supabase.from('policies').select('*').eq('draft', false).order('publish_date', { ascending: false }).limit(20),
+                    _supabase.from('tech_trends').select('*').eq('draft', false).order('publish_date', { ascending: false }).limit(20)
                 ]);
 
-                // 2. 数据标准化 (增加 type 参数)
-                
-                // News -> type=news
+                if (newsRes.error || policiesRes.error || techRes.error) {
+                    console.error("数据库查询错误:", newsRes.error || policiesRes.error || techRes.error);
+                    return;
+                }
+
+                // 2. 数据标准化 (核心修改在这里：link 的指向)
+
+                // News -> news-detail.html
                 const newsItems = (newsRes.data || []).map(item => ({
-                    id: item.id,
-                    title: item.title,
-                    date: item.publish_date,
+                    id: item.id, 
+                    title: item.title, 
+                    date: item.publish_date, 
                     summary: item.summary,
-                    tag: item.category || '资讯',
+                    tag: item.category || '资讯', 
                     image: item.image_url,
-                    // ★★★ 核心修改：传递 type=news ★★★
-                    link: `news-detail.html?type=news&id=${item.id}`, 
+                    // ★★★ 修改点：指向新闻详情页 ★★★
+                    link: `news-detail.html?id=${item.id}`, 
                     sourceType: 'news'
                 }));
 
-                // Tech -> type=tech_trends
-                const techItems = (techRes.data || []).map(item => ({
-                    id: item.id,
-                    title: item.title,
-                    date: item.publish_date,
+                // Policies -> policy-detail.html
+                const policyItems = (policiesRes.data || []).map(item => ({
+                    id: item.id, 
+                    title: item.title, 
+                    date: item.publish_date, 
                     summary: item.summary,
-                    tag: item.type || '技术',
+                    tag: item.region_type || '政策', 
+                    image: null,
+                    // ★★★ 修改点：指向政策详情页 ★★★
+                    link: `policy-detail.html?id=${item.id}`, 
+                    extraInfo: item.department, 
+                    sourceType: 'policy'
+                }));
+
+                // Tech -> tech-detail.html
+                const techItems = (techRes.data || []).map(item => ({
+                    id: item.id, 
+                    title: item.title, 
+                    date: item.publish_date, 
+                    summary: item.summary,
+                    tag: item.type || '技术', 
                     image: item.image_url,
-                    // ★★★ 核心修改：传递 type=tech_trends ★★★
-                    link: `news-detail.html?type=tech_trends&id=${item.id}`,
+                    // ★★★ 修改点：指向技术详情页 (之前可能错写成了 news-detail) ★★★
+                    link: `tech-detail.html?id=${item.id}`, 
                     sourceType: 'tech'
                 }));
 
-                // Policies -> 外部链接 (通常政策是PDF文件)
-                const policyItems = (policiesRes.data || []).map(item => ({
-                    id: item.id,
-                    title: item.title,
-                    date: item.publish_date,
-                    summary: item.summary,
-                    tag: item.region_type || '政策',
-                    image: null,
-                    // 政策通常跳转到 file_url，如果没有则不跳转
-                    link: item.file_url || '#', 
-                    extraInfo: item.department,
-                    sourceType: 'policy' // 标记为 policy 用于特殊处理点击行为
-                }));
-
-                // 3. 合并与排序 (按最早日期在前: a.date - b.date; 按最新: b.date - a.date)
+                // 3. 合并与排序
                 allFeedData = [...newsItems, ...policyItems, ...techItems];
-                // 这里按照你的要求“按照最早日期去排序”
-                allFeedData.sort((a, b) => new Date(a.date) - new Date(b.date)); 
-                
-                // 如果你想改回“最新在前”，用下面这行：
-                // allFeedData.sort((a, b) => new Date(b.date) - new Date(a.date));
+                allFeedData.sort((a, b) => new Date(b.date) - new Date(a.date)); // 或者是 b.date - a.date
 
-                // 4. 渲染页面
+                // 4. 渲染
                 renderPage(1);
                 document.getElementById('pagination-box').style.display = 'flex';
 
             } catch (err) {
-                console.error(err);
-                container.innerHTML = '<p style="text-align:center; color:red;">数据加载异常</p>';
+                console.error("JS执行错误:", err);
+                container.innerHTML = '<p style="text-align:center; color:red;">程序执行异常</p>';
             }
         }
 
