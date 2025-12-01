@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI 智能采编助手 | LowAltitude Admin</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        body { 
+            background: #f1f5f9; 
+            margin: 0; 
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+
+        /* 响应式网格布局 */
+        .ai-container { 
+            display: grid; 
+            grid-template-columns: 1fr 1fr; 
+            gap: 30px; 
+            padding: 40px 20px; 
+            max-width: 1400px; 
+            margin: 0 auto; 
+        }
+
+        .panel { 
+            background: white; 
+            padding: 30px; 
+            border-radius: 12px; 
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05); 
+        }
+
+        .panel h2 { 
+            margin-bottom: 20px; 
+            color: #0f172a; 
+            border-bottom: 1px solid #eee; 
+            padding-bottom: 15px; 
+            font-size: 1.2rem; 
+            font-weight: 600;
+        }
+
+        label { 
+            display: block; 
+            margin-bottom: 8px; 
+            font-weight: 600; 
+            color: #475569; 
+            font-size: 0.9rem; 
+        }
+
+        input, select, textarea { 
+            width: 100%; 
+            padding: 12px; 
+            margin-bottom: 20px; 
+            border: 1px solid #cbd5e1; 
+            border-radius: 8px; 
+            font-family: inherit; 
+            font-size: 0.95rem; 
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        input:focus, select:focus, textarea:focus { 
+            outline: none; 
+            border-color: #3b82f6; 
+            box-shadow: 0 0 0 2px #bfdbfe; 
+        }
+
+        /* 文本域高度 */
+        #rawText { height: 200px; }
+        #outContent { height: 100px; min-height: 200px; resize: vertical; line-height: 1.6; font-family: 'SFMono-Regular', Consolas, monospace; }
+
+        /* 按钮样式 */
+        .btn-ai { 
+            background: linear-gradient(135deg, #6366f1, #3b82f6); 
+            color: white; 
+            border: none; 
+            width: 100%; 
+            padding: 16px; 
+            font-size: 1rem; 
+            font-weight: bold; 
+            border-radius: 8px; 
+            cursor: pointer; 
+            transition: 0.3s; 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            gap: 8px;
+        }
+        .btn-ai:hover:not(:disabled) { 
+            transform: translateY(-1px); 
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3); 
+        }
+        .btn-ai:disabled { 
+            background: #94a3b8; 
+            cursor: not-allowed; 
+            transform: none; 
+        }
+
+        .loading-spinner {
+            width: 20px; height: 20px; 
+            border: 3px solid #ffffff; 
+            border-bottom-color: transparent; 
+            border-radius: 50%; 
+            display: none; 
+            animation: rotation 1s linear infinite;
+        }
+        @keyframes rotation { 
+            0% { transform: rotate(0deg); } 
+            100% { transform: rotate(360deg); } 
+        }
+
+        /* 标签预览 */
+        .tag-preview { 
+            display: inline-block; 
+            background: #eff6ff; 
+            color: #3b82f6; 
+            padding: 2px 8px; 
+            border-radius: 4px; 
+            font-size: 0.8rem; 
+            margin-right: 5px; 
+            margin-top: 5px; 
+        }
+
+        /* 移动端适配 */
+        @media (max-width: 768px) {
+            .ai-container {
+                grid-template-columns: 1fr;
+                padding: 20px;
+            }
+            .btn-ai span { font-size: 0.95rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <header style="background:#fff; padding:15px 0; border-bottom:1px solid #e2e8f0;">
+        <div class="standard-container" style="display:flex; justify-content:space-between; align-items:center; max-width:1400px; margin:0 auto; padding:0 20px;">
+            <div class="logo" style="font-weight:800; font-size:1.2rem; color:#0f172a;">LowAltitude <span style="color:#3b82f6;">Admin</span></div>
+            <a href="index.html" style="font-size:0.9rem; color:#64748b; text-decoration:none;">← 返回首页</a>
+        </div>
+    </header>
+
+    <div class="standard-container ai-container">
+        
+        <!-- 左侧：素材输入 -->
+        <div class="panel">
+            <h2>1. 素材与配置</h2>
+            
+            <label>素材来源</label>
+            <select id="inputType">
+                <option value="url">粘贴网页链接 (URL)</option>
+                <option value="text">粘贴纯文本</option>
+            </select>
+
+            <div id="urlInputGroup">
+                <label>文章链接 (URL)</label>
+                <input type="url" id="rawUrl" placeholder="https://mp.weixin.qq.com/s/..." />
+                <p style="font-size:0.8rem; color:#94a3b8; margin-top:-10px; margin-bottom:20px;">
+                    * AI 将自动抓取网页内容进行重写
+                </p>
+            </div>
+
+            <div id="textInputGroup" style="display:none;">
+                <label>原始文本</label>
+                <textarea id="rawText" placeholder="请在此粘贴会议纪要、政策原文或新闻通稿..."></textarea>
+            </div>
+
+            <label>发布栏目</label>
+            <select id="targetCategory">
+                <option value="资讯快报">资讯快报 (News)</option>
+                <option value="政策法规">政策法规 (Policy)</option>
+                <option value="技术前沿">技术前沿 (Tech)</option>
+                <option value="深度报告">深度报告 (Deep Report)</option>
+            </select>
+
+            <button class="btn-ai" id="generateBtn" onclick="generateNews()">
+                <span class="loading-spinner" id="spinner"></span>
+                <span class="btn-text" id="btnText">✨ AI 一键生成新闻稿</span>
+            </button>
+        </div>
+
+        <!-- 右侧：结果编辑 -->
+        <div class="panel">
+            <h2>2. 生成结果 (可编辑)</h2>
+            
+            <label>标题</label>
+            <input type="text" id="outTitle" placeholder="等待 AI 生成...">
+            
+            <label>摘要</label>
+            <textarea id="outSummary" style="height: 80px;" placeholder="等待 AI 生成..."></textarea>
+            
+            <label>正文 (HTML 格式)</label>
+            <textarea id="outContent" placeholder="等待 AI 生成..."></textarea>
+            
+            <div style="display:flex; gap:15px; flex-wrap: wrap;">
+                <div style="flex:1; min-width: 200px;">
+                    <label>标签 (逗号分隔)</label>
+                    <input type="text" id="outTags" placeholder="eVTOL, 融资" oninput="updateTagPreview()">
+                </div>
+                <div style="width:160px;">
+                    <label>发布日期</label>
+                    <input type="date" id="outDate">
+                </div>
+            </div>
+
+            <!-- 标签预览 -->
+            <div id="tagPreviewContainer" style="margin-top: 8px;"></div>
+
+            <button class="btn btn-primary" style="width:100%; padding:15px; font-size:1rem;" onclick="saveToDatabase()">
+                💾 保存
+            </button>
+        </div>
+    </div>
+
+    <!-- Supabase SDK -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+        // ================= 配置区域 =================
+        const supabaseUrl = 'https://cpvisbzlzatfdqakqsul.supabase.co';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNwdmlzYnpsemF0ZmRxYWtxc3VsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQzOTgwMTYsImV4cCI6MjA3OTk3NDAxNn0.R__eoUjpzFP9_SUxIVnM9T1zpl1pcBTGMzxXLf-Orcg';
+        const _supabase = supabase.createClient(supabaseUrl, supabaseKey);
+        
+        // ★★★ 全局变量：用于暂存 AI 返回的完整数据（包含UI上没显示的字段） ★★★
+        let currentAiData = null; 
+        // ==============================================
+
+        // ====== 全局函数：设置按钮 loading 状态 ======
+        function setLoading(btn, isLoading) {
+            const spinner = btn.querySelector('.loading-spinner');
+            const text = btn.querySelector('.btn-text');
+            btn.disabled = isLoading;
+            spinner.style.display = isLoading ? 'inline-block' : 'none';
+            if (text) text.innerText = isLoading ? '🧠 AI 正在阅读并撰写...' : '✨ AI 一键生成新闻稿';
+        }
+
+        // ====== 切换输入模式 ======
+        function toggleInput() {
+            const type = document.getElementById('inputType').value;
+            document.getElementById('textInputGroup').style.display = type === 'text' ? 'block' : 'none';
+            document.getElementById('urlInputGroup').style.display = type === 'url' ? 'block' : 'none';
+        }
+
+        // ====== 动态更新标签预览 ======
+        function updateTagPreview() {
+            const container = document.getElementById('tagPreviewContainer');
+            container.innerHTML = '';
+            const val = document.getElementById('outTags').value || '';
+            const tags = val.split(/,|，/).map(t => t.trim()).filter(t => t);
+
+            tags.forEach(tag => {
+                const span = document.createElement('span');
+                span.className = 'tag-preview';
+                span.textContent = tag;
+                container.appendChild(span);
+            });
+        }
+
+        // ====== 页面加载初始化 + 权限检查 ======
+        document.addEventListener('DOMContentLoaded', async () => {
+            // --- 权限验证 ---
+            const { data: { session } } = await _supabase.auth.getSession();
+            if (!session) {
+                alert('请先登录');
+                location.href = 'login.html';
+                return;
+            }
+
+            const { data: profile, error } = await _supabase
+                .from('profiles')
+                .select('is_admin')
+                .eq('id', session.user.id)
+                .single();
+
+            if (error || !profile?.is_admin) {
+                alert('权限不足');
+                location.href = 'index.html';
+                return;
+            }
+
+            // --- 初始化默认值 ---
+            if (!document.getElementById('outDate').value) {
+                document.getElementById('outDate').value = new Date().toISOString().split('T')[0];
+            }
+
+            // --- 绑定事件 ---
+            document.getElementById('inputType').addEventListener('change', toggleInput);
+            document.getElementById('outTags').addEventListener('input', updateTagPreview);
+            
+            // 文本域自适应高度
+            const contentArea = document.getElementById('outContent');
+            contentArea.addEventListener('input', function () {
+                this.style.height = 'auto';
+                this.style.height = (this.scrollHeight + 10) + 'px';
+            });
+
+            // 默认隐藏文本输入区
+            toggleInput();
+        });
+
+        // ====== 1. 调用 AI 生成新闻 ======
+        async function generateNews() {
+            const inputType = document.getElementById('inputType').value;
+            // 获取下拉框选中的文本值，例如 "政策法规"
+            const categorySelect = document.getElementById('targetCategory');
+            // 注意：这里传给 AI 的 category 应该是中文名称，与 Edge Function 里的 switch case 匹配
+            const categoryLabel = categorySelect.options[categorySelect.selectedIndex].text.split(' ')[0]; // 取 "资讯快报"
+
+            let content = inputType === 'text' 
+                ? document.getElementById('rawText').value.trim()
+                : document.getElementById('rawUrl').value.trim();
+
+            if (!content) {
+                alert('请输入内容或链接');
+                return;
+            }
+
+            const btn = document.getElementById('generateBtn');
+            setLoading(btn, true);
+
+            try {
+                // 调用 Edge Function
+                const { data, error } = await _supabase.functions.invoke('generate-news', {
+                    body: { inputType, content, category: categoryLabel }
+                });
+
+                if (error) throw error;
+
+                // ★★★ 关键步骤：将 AI 返回的完整数据存入全局变量 ★★★
+                currentAiData = data; 
+                console.log("AI返回的完整数据:", currentAiData);
+
+                // 填充 UI 上的通用字段 (Title, Summary, Content, Tags, Date)
+                document.getElementById('outTitle').value = data?.title || '';
+                document.getElementById('outSummary').value = data?.summary || '';
+                
+                // 处理正文：有些分类 AI 可能返回在 content，有些在 summary
+                // 我们优先取 content，没有则取 summary
+                const mainBody = data?.content || data?.summary || '';
+                document.getElementById('outContent').value = mainBody;
+                
+                // 处理标签
+                document.getElementById('outTags').value = Array.isArray(data?.tags) ? data.tags.join(', ') : '';
+                
+                // 处理日期
+                if (data?.publish_date) {
+                    document.getElementById('outDate').value = data.publish_date;
+                }
+
+                // 更新标签预览
+                updateTagPreview();
+                // 自动调整高度
+                document.getElementById('outContent').style.height = 'auto';
+                document.getElementById('outContent').style.height = (document.getElementById('outContent').scrollHeight + 10) + 'px';
+
+            } catch (err) {
+                console.error('[AI 生成错误]', err);
+                alert('生成失败，请稍后再试。\n详细信息见控制台：' + err.message);
+            } finally {
+                setLoading(btn, false);
+            }
+        }
+
+        // ====== 2. 保存到数据库 (根据 AI 字段智能筛选) ======
+        async function saveToDatabase() {
+            // 1. 获取 UI 上用户可能修改过的值
+            const uiTitle = document.getElementById('outTitle').value.trim();
+            const uiSummary = document.getElementById('outSummary').value.trim();
+            const uiContent = document.getElementById('outContent').value.trim();
+            const uiDate = document.getElementById('outDate').value;
+            const uiTagsStr = document.getElementById('outTags').value;
+            
+            // 将标签字符串转数组
+            const uiTags = uiTagsStr.split(/,|，/).map(t => t.trim()).filter(t => t);
+
+            if (!uiTitle || !uiContent) {
+                alert('标题和正文不能为空');
+                return;
+            }
+
+            const { data: { session } } = await _supabase.auth.getSession();
+            if (!session) {
+                alert('登录已过期，请重新登录');
+                location.href = 'login.html';
+                return;
+            }
+
+            // 2. 确定目标表格和分类
+            // value 对应的是 HTML option 的 value: "资讯快报", "政策法规", "技术前沿"
+            const selectedCategoryValue = document.getElementById('targetCategory').value;
+
+            // 栏目 -> 表名 映射
+            const categoryTableMap = {
+                '资讯快报': 'news',
+                '政策法规': 'policies',
+                '技术前沿': 'tech_trends',
+                '深度报告': 'deep_reports'
+            };
+
+            const tableName = categoryTableMap[selectedCategoryValue];
+            if (!tableName) {
+                alert('不支持的栏目类型');
+                return;
+            }
+
+            // 3. 构建基础记录 (所有表都有的字段)
+            let record = {
+                title: uiTitle,
+                summary: uiSummary, // 政策表和新闻表都有 summary
+                publish_date: uiDate,
+                draft: true, // 默认为草稿
+                // 如果是 URL 模式，保存来源链接
+                source_url: document.getElementById('inputType').value === 'url' ? document.getElementById('rawUrl').value.trim() : null
+            };
+
+            // 如果有 currentAiData，尝试从中提取图片
+            if (currentAiData && currentAiData.image_url) {
+                record.image_url = currentAiData.image_url;
+            }
+
+            // ★★★ 4. 根据不同表格，从 currentAiData 提取特定字段 ★★★
+            // 如果 currentAiData 为空 (用户没点生成直接手写)，则使用默认值
+            const ai = currentAiData || {}; 
+
+            if (tableName === 'news') {
+                // --- 资讯快报 (News) ---
+                record.content = uiContent; // 只有 news 表需要 content 字段 (假设政策用 summary 存全文)
+                // 优先使用 UI 数据，如果 AI 提供了 news_category 则使用，否则默认
+                record.category = ai.news_category || '市场动态'; 
+                record.source = ai.source || '网络搜集';
+                // News 表不一定有 tags 字段，看你数据库定义。如果有，加上：
+                // record.tags = uiTags; 
+            } 
+            else if (tableName === 'policies') {
+                // --- 政策法规 (Policies) ---
+                // 注意：政策表通常用 summary 存长文，或 file_url。
+                // 如果你的 policies 表有 content 字段，则解开下面注释：
+                // record.content = uiContent; 
+                
+                // 如果 policies 表把正文存在 summary 里 (因为 summary 是 textarea full)
+                record.summary = uiContent; 
+
+                record.department = ai.department || '相关部门';
+                record.level = ai.policy_level || '国家部委'; // level 是关键字，数据库字段名为 level
+                record.region_type = ai.region_type || '国内';
+                // Policy 表通常没有 tags
+            } 
+            else if (tableName === 'tech_trends') {
+                // --- 技术前沿 (Tech Trends) ---
+                // Tech 表同样，看正文是存 summary 还是 content
+                record.summary = uiContent; 
+
+                record.type = ai.tech_type || '新产品';
+                record.org = ai.org || '未知机构';
+            }
+            else if (tableName === 'deep_reports') {
+                // --- 深度报告 (Deep Reports) ---
+                record.content = uiContent; // 深度报告必须有长文内容
+                record.author = ai.author || '特邀专家'; // 从 AI 结果中提取作者，或者默认
+                // title, summary, publish_date, draft, image_url 已经在上面基础记录里处理了
+            }
+
+            // 5. 执行插入
+            try {
+                console.log(`正在向 [${tableName}] 插入数据:`, record);
+                const { error } = await _supabase.from(tableName).insert([record]);
+
+                if (error) throw error;
+
+                alert('✅ 保存成功！\n文章已存入“待发布”列表。');
+                // 可选择跳转或重置
+                location.href = 'admin.html';
+
+            } catch (err) {
+                console.error('[保存失败]', err);
+                alert('保存失败: ' + err.message);
+            }
+        }
+    </script>
+</body>
+</html>

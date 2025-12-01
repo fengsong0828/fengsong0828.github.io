@@ -105,6 +105,7 @@
         const { data, error } = await _supabase
             .from('news')
             .select('*')
+            .eq('draft', false) // <--- 只选择 draft 为 false (已发布) 的新闻
             .order('publish_date', { ascending: false });
 
         // ... (后面的渲染代码不用动) ...

@@ -46,6 +46,9 @@
                 <a href="index.html" class="logo">LowAltitude<span>Admin</span></a>
                 <div style="display:flex; gap:15px; align-items:center;">
                     <span id="admin-name" style="font-size:0.9rem; font-weight:bold;">Loading...</span>
+                    <a href="admin-ai.html" class="btn btn-secondary" style="font-size:0.9rem; padding:6px 12px; background:#10b981; color:white; border-radius:4px; text-decoration:none;">
+                        🤖 AI新闻生成
+                    </a>
                     <a href="index.html" style="font-size:0.9rem; color:#64748b;">退出后台</a>
                 </div>
             </div>
@@ -59,6 +62,7 @@
                 <button class="tab-btn active" onclick="switchTable('news')">资讯快报</button>
                 <button class="tab-btn" onclick="switchTable('policies')">政策法规</button>
                 <button class="tab-btn" onclick="switchTable('tech_trends')">技术前沿</button>
+                <button class="tab-btn" onclick="switchTable('deep_reports')">深度报告</button>
                 <button class="tab-btn" onclick="switchTable('companies')">公司数据库</button>
             </div>
             <button class="btn btn-primary" onclick="openModal()">+ 新增数据</button>
@@ -93,20 +97,14 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
         // ================= 配置 Supabase =================
-        // 1. 替换为你的 Project URL
         const supabaseUrl = 'https://cpvisbzlzatfdqakqsul.supabase.co'; 
-        // 2. 替换为你的 anon key (public)
         const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNwdmlzYnpsemF0ZmRxYWtxc3VsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQzOTgwMTYsImV4cCI6MjA3OTk3NDAxNn0.R__eoUjpzFP9_SUxIVnM9T1zpl1pcBTGMzxXLf-Orcg';
-         
         const _supabase = supabase.createClient(supabaseUrl, supabaseKey);
 
-        // ===============================================
-        // ★★★ 核心配置：定义每个表有哪些字段 ★★★
-        // type: 'text' | 'date' | 'textarea' | 'select' | 'array'(对应 text[]) | 'boolean'
-        // listShow: true 表示在列表页显示这一列
-        // ===============================================
+        // ================= 数据表配置 =================
         const SCHEMAS = {
             news: {
                 label: '资讯快报',
@@ -116,9 +114,10 @@
                     { key: 'publish_date', label: '日期', type: 'date', listShow: true },
                     { key: 'source', label: '来源', type: 'text', listShow: true },
                     { key: 'image_url', label: '图片路径', type: 'text' },
-                    { key: 'summary', label: '摘要', type: 'textarea' }
+                    { key: 'summary', label: '摘要', type: 'textarea' },
+                    { key: 'draft', label: '草稿状态', type: 'boolean' } 
                 ],
-                sort: { col: 'publish_date', order: false } // 按日期倒序
+                sort: { col: 'publish_date', order: false }
             },
             policies: {
                 label: '政策法规',
@@ -129,7 +128,8 @@
                     { key: 'region_type', label: '区域', type: 'select', options: ['国内','国际'], listShow: true },
                     { key: 'publish_date', label: '发布日期', type: 'date', listShow: true },
                     { key: 'file_url', label: '文件链接', type: 'text' },
-                    { key: 'summary', label: '解读摘要', type: 'textarea' }
+                    { key: 'summary', label: '解读摘要', type: 'textarea' },
+                    { key: 'draft', label: '草稿状态', type: 'boolean' } 
                 ],
                 sort: { col: 'publish_date', order: false }
             },
@@ -141,9 +141,25 @@
                     { key: 'org', label: '机构/作者', type: 'text', listShow: true },
                     { key: 'publish_date', label: '日期', type: 'date', listShow: true },
                     { key: 'image_url', label: '图片路径', type: 'text' },
-                    { key: 'summary', label: '技术简介', type: 'textarea' }
+                    { key: 'summary', label: '技术简介', type: 'textarea' },
+                    { key: 'draft', label: '草稿状态', type: 'boolean' } 
                 ],
                 sort: { col: 'publish_date', order: false }
+            },
+            deep_reports: {
+                label: '深度报告',
+                fields: [
+                    { key: 'title', label: '报告标题', type: 'text', listShow: true },
+                    { key: 'author', label: '特邀专家/作者', type: 'text', listShow: true },
+                    { key: 'publish_date', label: '发布日期', type: 'date', listShow: true },
+                    { key: 'image_url', label: '封面图链接', type: 'text' },
+                    { key: 'summary', label: '核心观点 (摘要)', type: 'textarea' },
+                    // content 字段较长，type 用 textarea，但在列表页不显示 (listShow: false)
+                    { key: 'content', label: '报告正文 (支持换行)', type: 'textarea' }, 
+                    // 增加草稿状态控制
+                    // { key: 'draft', label: '草稿状态 (True为隐藏)', type: 'boolean', listShow: true }
+                ],
+                sort: { col: 'publish_date', order: false } // 按日期倒序
             },
             companies: {
                 label: '公司库',
@@ -153,17 +169,19 @@
                     { key: 'location', label: '所在地', type: 'text', listShow: true },
                     { key: 'tags', label: '标签 (逗号分隔)', type: 'array', placeholder: 'eVTOL,已上市', listShow: true },
                     { key: 'is_listed', label: '是否上市', type: 'boolean' },
-                    { key: 'description', label: '简介', type: 'textarea' }
+                    { key: 'description', label: '简介', type: 'textarea' },
+                    { key: 'draft', label: '草稿状态', type: 'boolean' } 
                 ],
                 sort: { col: 'id', order: true }
-            }
+            },
         };
 
-        // 当前状态
+        // 全局变量
         let currentTable = 'news';
-        let currentEditId = null; // null 表示新增，有值表示修改
+        let currentEditId = null;
+        let currentDataList = []; // ★★★ 修复Bug关键：把数据存在这里，而不是拼接到HTML里
 
-        // ================= 1. 初始化 & 权限 =================
+        // ================= 1. 初始化 =================
         document.addEventListener('DOMContentLoaded', async function() {
             const { data: { session } } = await _supabase.auth.getSession();
             if (!session) { location.href = 'login.html'; return; }
@@ -176,29 +194,26 @@
             }
 
             document.getElementById('admin-name').innerText = `管理员: ${profile.username}`;
-            switchTable('news'); // 默认加载新闻
+            switchTable('news'); 
         });
 
-        // ================= 2. 切换表格逻辑 =================
+        // ================= 2. 列表加载与逻辑修正 =================
         function switchTable(tableName) {
             currentTable = tableName;
-            
-            // 更新 Tab 样式
             document.querySelectorAll('.tab-btn').forEach(btn => {
                 btn.classList.toggle('active', btn.innerText === SCHEMAS[tableName].label);
             });
 
-            // 渲染表头
+            // 生成表头
             const thead = document.getElementById('table-head');
             const schema = SCHEMAS[tableName];
             let headHtml = '<tr>';
             schema.fields.forEach(f => {
                 if (f.listShow) headHtml += `<th>${f.label}</th>`;
             });
-            headHtml += '<th width="120">操作</th></tr>';
+            headHtml += `<th width="100">状态</th><th width="200">操作</th></tr>`; // 稍微加宽操作列
             thead.innerHTML = headHtml;
 
-            // 加载数据
             loadList();
         }
 
@@ -214,34 +229,87 @@
 
             if (error) { tbody.innerHTML = '<tr><td colspan="10" style="color:red;">加载失败</td></tr>'; return; }
 
+            // ★★★ 保存到全局变量，方便后续查找
+            currentDataList = data;
             tbody.innerHTML = '';
+
             data.forEach(item => {
                 const tr = document.createElement('tr');
                 let rowHtml = '';
                 
-                // 渲染列
+                // 渲染普通列
                 schema.fields.forEach(f => {
                     if (f.listShow) {
                         let val = item[f.key];
-                        if (f.type === 'array' && Array.isArray(val)) val = val.join(', '); // 数组转字符串显示
-                        if (f.type === 'boolean') val = val ? '✅' : '❌';
+                        if (f.type === 'array' && Array.isArray(val)) val = val.join(', ');
+                        if (f.type === 'boolean' && f.key !== 'draft') val = val ? '是' : '否';
                         rowHtml += `<td>${val || '-'}</td>`;
                     }
                 });
 
-                // 操作列
-                rowHtml += `
-                    <td>
-                        <button class="action-btn btn-edit" onclick='editItem(${JSON.stringify(item)})'>编辑</button>
-                        <button class="action-btn btn-delete" onclick="deleteItem('${item.id}')">删除</button>
-                    </td>`;
-                
+                // ★★★ 核心逻辑修正 ★★★
+                // 只有 draft === false 才是“已发布”。
+                // draft === true 或 draft === null (空) 都是“待发布”。
+                const isPublished = (item.draft === false);
+
+                const statusBadge = isPublished 
+                    ? '<span style="color:#16a34a; background:#dcfce7; padding:2px 8px; border-radius:4px; font-size:0.8rem;">已发布</span>'
+                    : '<span style="color:#d97706; background:#fef3c7; padding:2px 8px; border-radius:4px; font-size:0.8rem;">待发布</span>';
+
+                // ★★★ 按钮生成 (修复了引号Bug) ★★★
+                // 1. 编辑和删除按钮
+                let actionButtons = `
+                    <button class="action-btn btn-edit" onclick="triggerEdit('${item.id}')">编辑</button>
+                    <button class="action-btn btn-delete" onclick="deleteItem('${item.id}')">删除</button>
+                `;
+
+                // 2. 动态发布/隐藏按钮
+                if (isPublished) {
+                    // 如果已发布，显示【隐藏】
+                    actionButtons += `<button class="action-btn" style="background:#dc2626;" onclick="hideItem('${item.id}')">隐藏</button>`;
+                } else {
+                    // 如果待发布 (true 或 null)，显示【发布】
+                    actionButtons += `<button class="action-btn" style="background:#059669;" onclick="publishItem('${item.id}')">发布</button>`;
+                }
+
+                rowHtml += `<td>${statusBadge}</td><td>${actionButtons}</td>`;
                 tr.innerHTML = rowHtml;
                 tbody.appendChild(tr);
             });
         }
 
-        // ================= 3. 动态表单生成 =================
+        // ================= 3. 操作功能 (按需修改) =================
+        
+        // 【隐藏】：将 draft 设为 null (根据你的要求)
+        async function hideItem(id) {
+            if (!confirm('确定要隐藏这条内容吗？\n隐藏后将不再对外展示。')) return;
+            // 将 draft 更新为 null
+            const { error } = await _supabase.from(currentTable).update({ draft: null }).eq('id', id);
+            if (error) alert('隐藏失败: ' + error.message); else loadList();
+        }
+
+        // 【发布】：将 draft 设为 false
+        async function publishItem(id) {
+            if (!confirm('确定要发布吗？\n将在前台公开显示。')) return;
+            // 将 draft 更新为 false
+            const { error } = await _supabase.from(currentTable).update({ draft: false }).eq('id', id);
+            if (error) alert('发布失败: ' + error.message); else loadList();
+        }
+
+        // 编辑功能 (修复传递对象的问题)
+        function triggerEdit(id) {
+            const item = currentDataList.find(i => i.id == id); // 从全局变量里找
+            if (item) openModal(item);
+        }
+
+        // 删除功能
+        async function deleteItem(id) {
+            if (!confirm('确定删除吗？')) return;
+            const { error } = await _supabase.from(currentTable).delete().eq('id', id);
+            if (error) alert('删除失败'); else loadList();
+        }
+
+        // ================= 4. 弹窗与保存 =================
         function openModal(item = null) {
             currentEditId = item ? item.id : null;
             document.getElementById('modal-title').innerText = item ? `编辑 ${SCHEMAS[currentTable].label}` : `新增 ${SCHEMAS[currentTable].label}`;
@@ -249,9 +317,9 @@
             let html = '';
 
             SCHEMAS[currentTable].fields.forEach(f => {
-                let value = item ? (item[f.key] || '') : '';
+                // 如果是 draft 字段，默认新增时是“待发布”
+                let value = item ? (item[f.key] !== undefined ? item[f.key] : '') : '';
                 
-                // 特殊处理：数组转逗号字符串
                 if (f.type === 'array' && Array.isArray(value)) value = value.join(',');
 
                 html += `<div class="form-row"><label>${f.label}</label>`;
@@ -259,8 +327,7 @@
                 if (f.type === 'select') {
                     html += `<select id="field-${f.key}">`;
                     f.options.forEach(opt => {
-                        const selected = value === opt ? 'selected' : '';
-                        html += `<option value="${opt}" ${selected}>${opt}</option>`;
+                        html += `<option value="${opt}" ${value === opt ? 'selected' : ''}>${opt}</option>`;
                     });
                     html += `</select>`;
                 } else if (f.type === 'textarea') {
@@ -268,11 +335,28 @@
                 } else if (f.type === 'date') {
                     html += `<input type="date" id="field-${f.key}" value="${value}">`;
                 } else if (f.type === 'boolean') {
-                    const checked = value ? 'checked' : '';
-                    // 简单的下拉框做布尔值
-                    html += `<select id="field-${f.key}"><option value="true" ${value===true?'selected':''}>是</option><option value="false" ${value===false?'selected':''}>否</option></select>`;
+                    // 布尔值处理
+                    if (f.key === 'draft') {
+                        // 逻辑：true/null = 待发布(是草稿), false = 已发布(非草稿)
+                        // 判断当前是否是草稿
+                        const isDraft = (value === true || value === null || value === ''); 
+                        
+                        html += `
+                            <select id="field-${f.key}">
+                                <option value="true" ${isDraft ? 'selected' : ''}>待发布 (草稿)</option>
+                                <option value="false" ${!isDraft ? 'selected' : ''}>直接发布</option>
+                            </select>
+                        `;
+                    } else {
+                        const isTrue = (value === true);
+                        html += `
+                            <select id="field-${f.key}">
+                                <option value="true" ${isTrue ? 'selected' : ''}>是</option>
+                                <option value="false" ${!isTrue ? 'selected' : ''}>否</option>
+                            </select>
+                        `;
+                    }
                 } else {
-                    // 默认 text
                     html += `<input type="text" id="field-${f.key}" value="${value}" placeholder="${f.placeholder || ''}">`;
                 }
                 html += `</div>`;
@@ -282,55 +366,32 @@
             document.getElementById('edit-modal').style.display = 'flex';
         }
 
-        window.editItem = function(item) {
-            openModal(item); // 复用 openModal，传入数据就是编辑模式
-        }
-
-        // ================= 4. 保存与删除 =================
         async function saveData() {
             const formData = {};
-            const schema = SCHEMAS[currentTable];
-
-            // 收集数据
-            schema.fields.forEach(f => {
+            SCHEMAS[currentTable].fields.forEach(f => {
                 const el = document.getElementById(`field-${f.key}`);
                 let val = el.value;
 
-                // 特殊类型转换
-                if (f.type === 'array') {
-                    // "a, b, c" -> ["a", "b", "c"]
-                    val = val ? val.split(/[,，]/).map(s => s.trim()).filter(s => s) : [];
-                }
+                if (f.type === 'array') val = val ? val.split(/[,，]/).map(s => s.trim()).filter(s => s) : [];
+                
                 if (f.type === 'boolean') {
+                    // 字符串 'true'/'false' 转 boolean
                     val = (val === 'true');
+                    // 如果是 draft 且为 true，按你的逻辑，可以存 true 或者 null
+                    // 这里我们存 true 代表草稿，发布时改为 false，隐藏时改为 null
+                    // 为了统一，这里保存时如果选了“待发布”，就存 true
                 }
+                
                 formData[f.key] = val;
             });
 
-            let error;
-            if (currentEditId) {
-                // Update
-                const res = await _supabase.from(currentTable).update(formData).eq('id', currentEditId);
-                error = res.error;
-            } else {
-                // Insert
-                const res = await _supabase.from(currentTable).insert([formData]);
-                error = res.error;
-            }
+            const query = currentEditId 
+                ? _supabase.from(currentTable).update(formData).eq('id', currentEditId)
+                : _supabase.from(currentTable).insert([formData]);
 
-            if (error) {
-                alert('保存失败: ' + error.message);
-            } else {
-                alert('成功！');
-                closeModal();
-                loadList();
-            }
-        }
-
-        async function deleteItem(id) {
-            if (!confirm('确定删除吗？')) return;
-            const { error } = await _supabase.from(currentTable).delete().eq('id', id);
-            if (error) alert('删除失败'); else loadList();
+            const { error } = await query;
+            if (error) { alert('保存失败: ' + error.message); }
+            else { alert('成功！'); closeModal(); loadList(); }
         }
 
         function closeModal() { document.getElementById('edit-modal').style.display = 'none'; }

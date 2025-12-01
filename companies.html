@@ -152,6 +152,7 @@
         const { data, error } = await _supabase
             .from('companies')
             .select('*')
+            .eq('draft', false) // <--- 只选择 draft 为 false (已发布) 的新闻
             .order('id', { ascending: true }); // 按ID排序
 
         if (error) {

@@ -101,6 +101,7 @@
         const { data, error } = await _supabase
             .from('tech_trends')
             .select('*')
+            .eq('draft', false) // <--- 只选择 draft 为 false (已发布) 的新闻
             .order('publish_date', { ascending: false });
 
         if (error) {

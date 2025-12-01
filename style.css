@@ -349,3 +349,26 @@ footer {
     border-bottom: none !important;  /* 去掉可能存在的下划线干扰 */
     padding-bottom: 0 !important;
 }
+
+/* 加载占位 */
+.loading-spinner { text-align: center; color: #94a3b8; padding: 40px; }
+
+/* 分页按钮样式微调 */
+.pagination-controls button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    background-color: #f1f5f9;
+    border-color: #e2e8f0;
+}
+
+/* 针对混合列表的样式调整 */
+.news-image.placeholder-policy {
+    background: #f1f5f9;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #64748b;
+    font-weight: bold;
+    font-size: 0.9rem;
+    border: 1px solid #e2e8f0;
+}

@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>深度报告 | LowAltitude Insight</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        /* 深度报告专用列表样式 */
+        .report-card {
+            display: flex;
+            background: #fff;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            overflow: hidden;
+            margin-bottom: 24px;
+            transition: 0.3s;
+        }
+        .report-card:hover { box-shadow: var(--card-shadow); border-color: #3b82f6; transform: translateY(-2px); }
+        
+        .report-cover {
+            width: 240px;
+            background-color: #cbd5e1;
+            background-size: cover;
+            background-position: center;
+            flex-shrink: 0;
+        }
+        .report-body { padding: 24px; flex: 1; display: flex; flex-direction: column; }
+        .report-tag { 
+            display: inline-block; font-size: 0.75rem; color: white; 
+            background: #0f172a; padding: 2px 8px; border-radius: 4px; margin-bottom: 10px; width: fit-content;
+        }
+        .report-title { font-size: 1.25rem; font-weight: 700; margin-bottom: 10px; color: #1e293b; }
+        .report-summary { font-size: 0.95rem; color: #64748b; margin-bottom: 20px; line-height: 1.6; flex-grow: 1; }
+        .report-footer { 
+            display: flex; justify-content: space-between; align-items: center; 
+            border-top: 1px solid #f1f5f9; padding-top: 15px; font-size: 0.85rem; color: #94a3b8; 
+        }
+        
+        /* 手机适配 */
+        @media (max-width: 768px) {
+            .report-card { flex-direction: column; }
+            .report-cover { width: 100%; height: 180px; }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="standard-container">
+            <div class="nav-inner">
+                <a href="index.html" class="logo">LowAltitude<span>Insight</span></a>
+                <nav class="nav-links">
+                    <a href="index.html">首页</a>
+                    <a href="reports.html" class="active">深度报告</a>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <section class="page-hero">
+        <div class="standard-container">
+            <h1>深度研究报告</h1>
+            <p>独家行业分析、赛道梳理与市场预测</p>
+        </div>
+    </section>
+
+    <div class="standard-container" style="padding-bottom: 80px;">
+        <div id="reports-container">
+            <p style="text-align:center; padding:40px; color:#999;">正在加载报告...</p>
+        </div>
+    </div>
+
+    <footer>
+        <div class="standard-container">
+            <div class="copyright">&copy; 2025 LowAltitude Insight.</div>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+        const supabaseUrl = 'https://cpvisbzlzatfdqakqsul.supabase.co'; 
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNwdmlzYnpsemF0ZmRxYWtxc3VsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQzOTgwMTYsImV4cCI6MjA3OTk3NDAxNn0.R__eoUjpzFP9_SUxIVnM9T1zpl1pcBTGMzxXLf-Orcg';
+        const _supabase = supabase.createClient(supabaseUrl, supabaseKey);
+
+        document.addEventListener('DOMContentLoaded', async function() {
+            const container = document.getElementById('reports-container');
+            
+            const { data, error } = await _supabase
+                .from('deep_reports')
+                .select('*')
+                .eq('draft', false)
+                .order('publish_date', { ascending: false });
+
+            if(error) { container.innerHTML = '加载失败'; return; }
+            if(!data.length) { container.innerHTML = '暂无报告'; return; }
+
+            container.innerHTML = '';
+            
+            data.forEach(item => {
+                const bgStyle = item.image_url ? `background-image: url('${item.image_url}');` : '';
+                const author = item.author || '特邀专家';
+                
+                container.innerHTML += `
+                    <article class="report-card">
+                        <div class="report-cover" style="${bgStyle}"></div>
+                        <div class="report-body">
+                            <span class="report-tag">深度研报</span>
+                            <h2 class="report-title">
+                                <a href="report-detail.html?id=${item.id}">${item.title}</a>
+                            </h2>
+                            <p class="report-summary">${item.summary}</p>
+                            <div class="report-footer">
+                                <div style="display:flex; align-items:center; gap:8px;">
+                                    <span style="width:24px; height:24px; background:#e2e8f0; border-radius:50%; display:inline-block;"></span>
+                                    <span>${author}</span>
+                                </div>
+                                <span>${item.publish_date}</span>
+                            </div>
+                        </div>
+                    </article>
+                `;
+            });
+        });
+    </script>
+</body>
+</html>

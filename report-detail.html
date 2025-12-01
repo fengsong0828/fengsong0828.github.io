@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>深度报告详情 | LowAltitude Insight</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        /* 全局背景 */
+        body { background-color: #f8fafc; }
+        .page-spacing { padding-top: 40px; padding-bottom: 80px; }
+        
+        /* 返回导航 */
+        .back-nav { margin-bottom: 20px; }
+        .back-btn { display: inline-flex; align-items: center; gap: 6px; color: #64748b; text-decoration: none; font-size: 0.95rem; font-weight: 500; }
+        .back-btn:hover { color: #3b82f6; }
+
+        /* 卡片容器 (完全复用 news-detail 样式) */
+        .article-card {
+            background: #fff; 
+            border-radius: 12px; 
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            overflow: hidden; 
+            max-width: 960px; 
+            margin: 0 auto;
+            
+            display: flex;
+            flex-direction: column;
+            height: auto !important;
+        }
+
+        /* === 头部布局 (Header) === */
+        .article-header {
+            position: relative !important; 
+            height: auto !important; 
+            display: flex;
+            flex-direction: column; 
+            /* 左右 50px，上 80px，下 0 */
+            padding: 80px 50px 0 50px; 
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        /* 1. 左上角：类别标签 */
+        .category-badge {
+            position: absolute; top: 24px; left: 24px;
+            background-color: #0f172a; /* 深度报告用深色背景以示区别 */
+            color: #fff; 
+            padding: 5px 12px; border-radius: 6px;
+            font-size: 0.85rem; font-weight: 600; letter-spacing: 0.5px; 
+            z-index: 10;
+        }
+
+        /* 2. 中间：标题 */
+        .article-title {
+            width: 100%;
+            font-size: 2.2rem; /* 深度报告标题稍大一点 */
+            font-weight: 800; 
+            color: #0f172a; 
+            line-height: 1.3; 
+            text-align: center; 
+            margin: 0 0 30px 0; 
+        }
+
+        /* 3. 底部：日期和作者 (复用 news-detail 的 meta-row) */
+        .meta-row {
+            display: flex; 
+            width: 100%; 
+            justify-content: space-between; 
+            align-items: center;
+            border-top: 1px solid #f1f5f9; /* 分割线 */
+            padding-top: 20px; 
+            padding-bottom: 20px; 
+            color: #64748b; 
+            font-size: 0.9rem;
+        }
+
+        /* === 正文区域 (Body) === */
+        .article-body {
+            /* 左右 50px，严格对齐 Header */
+            padding: 0 50px 50px 50px; 
+            
+            /* 距离头部 meta-row 的间距 */
+            margin-top: 40px !important; 
+            
+            position: static !important;
+            font-size: 1.15rem; /* 深度报告字号略大，提升阅读体验 */
+            line-height: 1.9; 
+            color: #334155; 
+            text-align: justify;
+        }
+        .article-body p { margin-bottom: 24px; }
+        .article-body h2 { margin-top: 40px; margin-bottom: 20px; color: #0f172a; font-size: 1.6rem; border-left: 4px solid #3b82f6; padding-left: 12px; }
+
+        /* 封面图 */
+        .report-hero-img {
+            width: 100%;
+            height: auto;
+            max-height: 500px;
+            object-fit: cover;
+            display: block;
+        }
+
+        /* 摘要框 (深度报告特有) */
+        .summary-box {
+            background: #f8fafc;
+            border-left: 4px solid #3b82f6;
+            padding: 20px 25px;
+            margin-bottom: 40px;
+            font-style: italic;
+            color: #475569;
+            font-size: 1.05rem;
+            line-height: 1.7;
+        }
+
+        /* 手机适配 */
+        @media (max-width: 768px) {
+            .article-header { padding: 80px 20px 0 20px; }
+            .article-body { padding: 0 20px 40px 20px; margin-top: 20px !important; }
+            .article-title { font-size: 1.7rem; }
+            .meta-row { flex-direction: column; gap: 10px; align-items: center; }
+            .summary-box { margin-bottom: 30px; padding: 15px; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 导航栏 -->
+    <header>
+        <div class="standard-container">
+            <div class="nav-inner">
+                <a href="index.html" class="logo">LowAltitude<span>Insight</span></a>
+                <button class="mobile-menu-btn" onclick="toggleMenu()">☰</button>
+                <nav class="nav-links" id="navMenu">
+                    <a href="index.html">首页</a>
+                    <a href="news.html">资讯快报</a>
+                    <a href="policies.html">政策法规</a>
+                    <a href="tech.html">技术前沿</a>
+                    <a href="companies.html">公司数据库</a>
+                    <a href="forum.html">论坛交流</a>
+                </nav>
+                <div class="header-actions"><button class="btn btn-primary">订阅/登录</button></div>
+            </div>
+        </div>
+    </header>
+
+    <div class="standard-container page-spacing">
+        <div class="back-nav">
+            <a href="reports.html" class="back-btn">← 返回深度报告列表</a>
+        </div>
+
+        <!-- 使用 .article-card 类名，保持容器一致 -->
+        <article class="article-card" id="report-main">
+            <div style="padding: 100px; text-align: center; color: #64748b;">正在加载深度报告...</div>
+        </article>
+    </div>
+
+    <footer>
+        <div class="standard-container"><div class="copyright">&copy; 2025 LowAltitude Insight.</div></div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+        function toggleMenu() { document.getElementById('navMenu').classList.toggle('active'); }
+
+        const supabaseUrl = 'https://cpvisbzlzatfdqakqsul.supabase.co'; 
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNwdmlzYnpsemF0ZmRxYWtxc3VsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQzOTgwMTYsImV4cCI6MjA3OTk3NDAxNn0.R__eoUjpzFP9_SUxIVnM9T1zpl1pcBTGMzxXLf-Orcg';
+        const _supabase = supabase.createClient(supabaseUrl, supabaseKey);
+
+        document.addEventListener('DOMContentLoaded', async function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const reportId = urlParams.get('id');
+            const container = document.getElementById('report-main');
+
+            if (!reportId) {
+                container.innerHTML = '<div style="padding:40px; text-align:center; color:red;">错误：缺少报告ID</div>';
+                return;
+            }
+
+            const { data: report, error } = await _supabase
+                .from('deep_reports')
+                .select('*')
+                .eq('id', reportId)
+                .single();
+
+            if (error) {
+                console.error(error);
+                container.innerHTML = '<div style="padding:40px; text-align:center; color:red;">报告内容加载失败，可能已被删除。</div>';
+                return;
+            }
+
+            // 格式化内容
+            const contentText = report.content || '';
+            const formattedContent = contentText.split('\n').map(para => para.trim() ? `<p>${para}</p>` : '').join('');
+            
+            const imgHtml = report.image_url ? `<img src="${report.image_url}" class="report-hero-img" alt="${report.title}">` : '';
+            const dateStr = report.publish_date || '未知日期';
+            const authorStr = report.author || '特邀专家';
+            
+            // 摘要部分
+            const summaryHtml = report.summary ? 
+                `<div class="summary-box"><strong>核心观点：</strong>${report.summary}</div>` : '';
+
+            // 渲染结构：严格对齐 news-detail.html
+            container.innerHTML = `
+                <header class="article-header">
+                    <!-- 1. 类别标签 -->
+                    <div class="category-badge">深度研报</div>
+                    
+                    <!-- 2. 标题 (居中) -->
+                    <h1 class="article-title">${report.title}</h1>
+                    
+                    <!-- 3. 底部元数据 (两端对齐) -->
+                    <div class="meta-row">
+                        <div><span style="opacity:0.7;">发布于:</span> ${dateStr}</div>
+                        <div><span style="opacity:0.7;">撰写作者:</span> <span style="font-weight:500; color:#334155;">${authorStr}</span></div>
+                    </div>
+                </header>
+
+                ${imgHtml}
+
+                <div class="article-body">
+                    ${summaryHtml}
+                    ${formattedContent || '<p>暂无正文内容...</p>'}
+                </div>
+            `;
+            
+            document.title = report.title + " | 深度报告";
+        });
+    </script>
+</body>
+</html>
