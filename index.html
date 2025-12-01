@@ -408,7 +408,7 @@
                 .select('id, title, author, publish_date, summary') 
                 .eq('draft', false) 
                 .order('publish_date', { ascending: false })
-                .limit(3);
+                .limit(5);
 
             // ★★★ 修改点：如果出错，把错误打印在页面上，方便你看 ★★★
             if (error) { 
@@ -586,5 +586,6 @@
         }
     </script>
 </body>
+
 
 </html>
