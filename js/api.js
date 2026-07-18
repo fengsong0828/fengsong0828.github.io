@@ -3,8 +3,8 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
 // ⚠️ 请替换为您自己的 Supabase 配置 (保持您原有的配置不变)
-const supabaseUrl = 'https://ncvcjlyzbuhzaoruwjba.supabase.co'
-const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5jdmNqbHl6YnVoemFvcnV3amJhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjUxNDIxNzgsImV4cCI6MjA4MDcxODE3OH0.yn7gsprnzMbK50kaYTwCOu5cgvJtXIKKMvJOIMQGLAA'
+const supabaseUrl = 'https://tuomplmnlkegbasklgft.supabase.co'
+const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR1b21wbG1ubGtlZ2Jhc2tsZ2Z0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQyNDY3NjIsImV4cCI6MjA5OTgyMjc2Mn0.ZDVB9iZ6XOVB_E73F4N75-9ig-reF9cV4T1H4zme8Fg'
 
 let supabaseInstance = null;
 
